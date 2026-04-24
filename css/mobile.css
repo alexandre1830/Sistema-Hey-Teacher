@@ -22,9 +22,6 @@
     display: flex !important;
   }
 
-  .sidebar-overlay {
-    display: block;
-  }
   .sidebar-overlay.is-visible {
     display: block !important;
   }
