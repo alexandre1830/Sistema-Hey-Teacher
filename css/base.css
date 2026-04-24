@@ -1074,26 +1074,45 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   border-radius: var(--radius-lg);
   padding: 20px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
+  /* Quando usado como <a> */
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  opacity: .06;
-  transform: translate(20px, -20px);
-}
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--gray-300); }
 
-.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+/* Ícone do card (sem círculo, cor única da marca) */
+.stat-card-icon {
+  flex-shrink: 0;
+  font-size: 1.4rem;
+  color: var(--color-primary);
+  opacity: .75;
+  width: 28px;
+  text-align: center;
+  transition: opacity var(--transition-fast);
+  transform: scale(1.8);
+  margin-right: 12px;
+}
+.stat-card:hover .stat-card-icon { opacity: 1; }
+
+/* Seta inline no canto direito do card-link */
+.stat-card-arrow {
+  flex-shrink: 0;
+  font-size: .8rem;
+  color: var(--gray-400);
+  margin-left: auto;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+.stat-card:hover .stat-card-arrow {
+  color: var(--color-primary);
+  transform: translateX(3px);
+}
 
 .stat-card--sm { padding: 16px; }
 
@@ -2892,6 +2911,9 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 }
 
 [data-theme="dark"] .topbar { border-bottom-color: var(--gray-200); }
+[data-theme="dark"] .stat-card-icon  { color: var(--color-primary-light); }
+[data-theme="dark"] .stat-card-arrow { color: var(--gray-300); }
+[data-theme="dark"] .stat-card:hover { border-color: var(--gray-300); }
 
 /* Divisores internos */
 [data-theme="dark"] .modal-header,
