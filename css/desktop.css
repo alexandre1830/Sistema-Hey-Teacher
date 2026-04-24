@@ -1,0 +1,408 @@
+/* ==========================================================================
+   DESKTOP.CSS — Hey, Teacher! Sistema de Gestão
+   Estilos para telas médias e grandes (≥ 768px)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. SIDEBAR — sempre visível no desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .sidebar {
+    transform: translateX(0) !important;
+  }
+
+  .sidebar-close {
+    display: none !important;
+  }
+
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  .main-wrapper {
+    margin-left: var(--sidebar-width);
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   2. TOPBAR
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .topbar {
+    padding: 0 32px;
+  }
+
+  .topbar-title h2 {
+    font-size: 1.25rem;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   3. PAGE CONTENT
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .page-content {
+    padding: 28px 32px;
+    gap: 28px;
+  }
+
+}
+
+@media (min-width: 1280px) {
+
+  .page-content {
+    padding: 32px 40px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   4. LOGIN PAGE
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+
+  .login-card {
+    padding: 44px 48px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   5. STATS GRID — layouts por breakpoint
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (min-width: 1024px) {
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stats-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stats-grid--finance {
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   6. CARDS GRID
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (min-width: 1024px) {
+
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cards-grid--classes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (min-width: 1280px) {
+
+  .cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .cards-grid--classes {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   7. FORM ROWS — manter em linha no desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+
+  .form-row--2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-row--3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   8. TOOLBAR
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .toolbar {
+    flex-wrap: nowrap;
+  }
+
+  .toolbar .search-wrapper {
+    max-width: 320px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   9. CHARTS ROW
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card--doughnut .chart-wrapper {
+    height: 240px;
+  }
+
+}
+
+@media (min-width: 1024px) {
+
+  .charts-row {
+    grid-template-columns: 1fr 320px;
+  }
+
+}
+
+@media (min-width: 1280px) {
+
+  .charts-row {
+    grid-template-columns: 1fr 360px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   10. INFO GRID (Student detail)
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (min-width: 1024px) {
+
+  .info-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   11. MODAL — tamanhos no desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .modal-overlay {
+    padding: 40px;
+  }
+
+  .modal {
+    max-height: 88vh;
+  }
+
+  .modal--large {
+    max-width: 820px;
+  }
+
+  .modal-overlay--large {
+    padding-top: 60px;
+    align-items: flex-start;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   12. PAYMENT CARDS GRID & TOOLBAR
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .payment-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .payments-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+}
+
+@media (min-width: 1200px) {
+
+  .payment-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   13. CALENDAR
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .calendar-section .section-header {
+    flex-wrap: nowrap;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   14. TABS — espaçamento desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .tabs {
+    padding: 0 32px;
+  }
+
+  .tab {
+    padding: 16px 22px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   15. TABLE — mostrar todas as colunas no desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .data-table th,
+  .data-table td {
+    padding: 14px 20px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   16. TOPBAR — período selector e ações
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .topbar-actions {
+    gap: 12px;
+  }
+
+  .period-selector {
+    padding: 5px 10px;
+  }
+
+  .period-label {
+    min-width: 140px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   17. SIDEBAR — hover state e largura expandida
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .sidebar:hover .nav-label {
+    opacity: 1;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   18. SCHEDULE ENTRY — grid em linha no desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+
+  .schedule-entry .form-row--3 {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   19. TOAST — posição desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  .toast-container {
+    bottom: 32px;
+    right: 32px;
+  }
+
+  .toast {
+    min-width: 280px;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   20. FILTER GROUP — sem quebra no desktop
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+
+  .toolbar--wrap {
+    flex-wrap: nowrap;
+  }
+
+  .filter-group {
+    flex-wrap: nowrap;
+  }
+
+  .filter-group--dates {
+    flex-wrap: nowrap;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   21. UPCOMING LIST — grid no desktop grande
+   -------------------------------------------------------------------------- */
+@media (min-width: 1280px) {
+
+  .upcoming-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   22. STAT CARD — layout interno ajustado
+   -------------------------------------------------------------------------- */
+@media (min-width: 1200px) {
+
+  .stat-card {
+    padding: 24px;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+  }
+
+}
