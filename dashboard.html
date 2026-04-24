@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Painel principal com resumo de alunos ativos, turmas, frequência mensal, receita e calendário de aulas." />
+  <meta name="theme-color" content="#032d6f" />
   <title>Hey, Teacher! — Dashboard</title>
   <!-- Tema: aplica preferência salva antes do CSS renderizar (evita flash) -->
   <script>try{var _t=localStorage.getItem('ht_theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
@@ -10,16 +12,20 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" /></noscript>
 
   <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
 
   <!-- FullCalendar -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" />
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" /></noscript>
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/dark.css" />
   <link rel="stylesheet" href="css/desktop.css" />
   <link rel="stylesheet" href="css/mobile.css" />
 </head>
@@ -29,7 +35,7 @@
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <img src="images/logo-azul.png" alt="Hey, Teacher!" class="sidebar-logo-img" />
+        <img src="images/logo-azul.png" alt="Hey, Teacher!" class="sidebar-logo-img" width="1272" height="871" />
       </div>
       <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">
         <i class="fa-solid fa-xmark"></i>
@@ -199,20 +205,20 @@
   </div>
 
   <!-- FullCalendar -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/pt-br.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/pt-br.global.min.js" defer></script>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/sidebar.js"></script>
-  <script src="js/modals.js"></script>
-  <script src="js/calendar.js"></script>
-  <script src="js/profile.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="js/supabase.js" defer></script>
+  <script src="js/theme.js" defer></script>
+  <script src="js/utils.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/storage.js" defer></script>
+  <script src="js/sidebar.js" defer></script>
+  <script src="js/modals.js" defer></script>
+  <script src="js/calendar.js" defer></script>
+  <script src="js/profile.js" defer></script>
+  <script src="js/dashboard.js" defer></script>
 </body>
 </html>

@@ -291,8 +291,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         <span class="prog-modal-summary-label">${doneTotal} de ${totalCont} conteúdos realizados no total</span>
       </div>
 
-      <div class="prog-modal-tabs" role="tablist" aria-label="Níveis do currículo">
-        ${tabsHtml}
+      <div class="prog-modal-tabs-wrap">
+        <button class="prog-tabs-nav prog-tabs-nav--prev" id="progTabsPrev" aria-label="Guias anteriores" disabled>
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="prog-modal-tabs" role="tablist" aria-label="Níveis do currículo">
+          ${tabsHtml}
+        </div>
+        <button class="prog-tabs-nav prog-tabs-nav--next" id="progTabsNext" aria-label="Próximas guias">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
       </div>
 
       <div class="prog-modal-cat-bar">
@@ -319,6 +327,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderProgressBody(studentId);
       });
     });
+
+    /* ---- Navegação das guias (scroll com botões) ---- */
+    const tabsList = body.querySelector('.prog-modal-tabs');
+    const tabsPrev = body.querySelector('#progTabsPrev');
+    const tabsNext = body.querySelector('#progTabsNext');
+
+    function _updateTabsNav() {
+      if (!tabsList) return;
+      const overflows = tabsList.scrollWidth > tabsList.clientWidth + 2;
+      const wrap = tabsList.closest('.prog-modal-tabs-wrap');
+      wrap?.classList.toggle('prog-modal-tabs-wrap--overflow', overflows);
+      if (tabsPrev) tabsPrev.disabled = tabsList.scrollLeft <= 1;
+      if (tabsNext) tabsNext.disabled = tabsList.scrollLeft + tabsList.clientWidth >= tabsList.scrollWidth - 1;
+    }
+
+    tabsPrev?.addEventListener('click', () => {
+      tabsList?.scrollBy({ left: -200, behavior: 'smooth' });
+      setTimeout(_updateTabsNav, 320);
+    });
+    tabsNext?.addEventListener('click', () => {
+      tabsList?.scrollBy({ left: 200, behavior: 'smooth' });
+      setTimeout(_updateTabsNav, 320);
+    });
+    tabsList?.addEventListener('scroll', _updateTabsNav, { passive: true });
+
+    /* Garante que a guia ativa fique visível */
+    tabsList?.querySelector('.pmtab--active')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    /* Inicializa estado dos botões após o layout estar pronto */
+    requestAnimationFrame(_updateTabsNav);
 
     body.querySelector('#progPrevPage')?.addEventListener('click', () => {
       _progPage--;

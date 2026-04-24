@@ -131,7 +131,14 @@ HT.calendar = (() => {
         center: 'title',
         right:  '',
       },
-      height: 'auto',
+      contentHeight: 'auto',
+      expandRows: false,
+      /* Janela de horários para as visualizações diária e semanal */
+      slotMinTime: '06:00:00',
+      slotMaxTime: '23:00:00',
+      /* Evita <a> sem href nos eventos (Lighthouse "links não rastreáveis") */
+      navLinks: false,
+      eventInteractive: false,
       events,
       eventClick(info) {
         const { type, className: cName, studentName } = info.event.extendedProps;
