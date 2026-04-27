@@ -133,90 +133,84 @@
     <main class="page-content" id="mainContent">
 
       <!-- ===== SECTION 1: Financial Summary ===== -->
+      <!-- Grid unificado: 4 colunas para cards + gráficos alinhados -->
       <section class="finance-summary-section" aria-label="Resumo financeiro">
 
-        <!-- Summary Cards Row -->
-        <div class="stats-grid stats-grid--finance">
-          <div class="stat-card stat-card--finance-main">
-            <div class="stat-icon">
-              <i class="fa-solid fa-circle-dollar-to-slot"></i>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Receita Total do Mês</span>
-              <span class="stat-value stat-value--lg" id="finTotalMonth">R$ 0,00</span>
-              <span class="stat-trend" id="finTrend">
-                <i class="fa-solid fa-arrow-trend-up"></i>
-                <span id="finTrendValue">0%</span> vs mês anterior
-              </span>
-            </div>
+        <!-- Stat cards — cada um ocupa 1 coluna -->
+        <div class="stat-card stat-card--finance-main">
+          <div class="stat-icon">
+            <i class="fa-solid fa-circle-dollar-to-slot"></i>
           </div>
-
-          <div class="stat-card stat-card--paid">
-            <div class="stat-icon">
-              <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Recebido</span>
-              <span class="stat-value" id="finPaidMonth">R$ 0,00</span>
-            </div>
-          </div>
-
-          <div class="stat-card stat-card--pending">
-            <div class="stat-icon">
-              <i class="fa-regular fa-clock"></i>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Pendente</span>
-              <span class="stat-value" id="finPendingMonth">R$ 0,00</span>
-            </div>
-          </div>
-
-          <div class="stat-card stat-card--overdue">
-            <div class="stat-icon">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Em Atraso</span>
-              <span class="stat-value" id="finOverdueMonth">R$ 0,00</span>
-            </div>
+          <div class="stat-body">
+            <span class="stat-label">Receita Total do Mês</span>
+            <span class="stat-value stat-value--lg" id="finTotalMonth">R$ 0,00</span>
+            <span class="stat-trend" id="finTrend">
+              <i class="fa-solid fa-arrow-trend-up"></i>
+              <span id="finTrendValue">0%</span> vs mês anterior
+            </span>
           </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="charts-row">
-
-          <!-- Monthly Revenue Bar Chart -->
-          <div class="chart-card chart-card--bar">
-            <div class="chart-card-header">
-              <h3 class="chart-title">
-                <i class="fa-solid fa-chart-column"></i>
-                Receita Mensal
-              </h3>
-              <select class="form-select form-select--sm" id="revenueChartYear" aria-label="Selecionar ano">
-                <!-- Populated by JS -->
-              </select>
-            </div>
-            <div class="chart-wrapper">
-              <canvas id="revenueChart" aria-label="Gráfico de receita mensal" role="img"></canvas>
-            </div>
+        <div class="stat-card stat-card--paid">
+          <div class="stat-icon">
+            <i class="fa-solid fa-circle-check"></i>
           </div>
+          <div class="stat-body">
+            <span class="stat-label">Recebido</span>
+            <span class="stat-value" id="finPaidMonth">R$ 0,00</span>
+          </div>
+        </div>
 
-          <!-- Payment Status Doughnut Chart -->
-          <div class="chart-card chart-card--doughnut">
-            <div class="chart-card-header">
-              <h3 class="chart-title">
-                <i class="fa-solid fa-chart-pie"></i>
-                Status de Pagamentos
-              </h3>
-            </div>
-            <div class="chart-wrapper">
-              <canvas id="statusChart" aria-label="Gráfico de status de pagamentos" role="img"></canvas>
-            </div>
-            <div class="chart-legend" id="statusChartLegend">
+        <div class="stat-card stat-card--pending">
+          <div class="stat-icon">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Pendente</span>
+            <span class="stat-value" id="finPendingMonth">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-card--overdue">
+          <div class="stat-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Em Atraso</span>
+            <span class="stat-value" id="finOverdueMonth">R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Gráfico de barras — colunas 1 a 3 (alinha com Receita Total + Recebido + Pendente) -->
+        <div class="chart-card chart-card--bar">
+          <div class="chart-card-header">
+            <h3 class="chart-title">
+              <i class="fa-solid fa-chart-column"></i>
+              Receita Mensal
+            </h3>
+            <select class="form-select form-select--sm" id="revenueChartYear" aria-label="Selecionar ano">
               <!-- Populated by JS -->
-            </div>
+            </select>
           </div>
+          <div class="chart-wrapper">
+            <canvas id="revenueChart" aria-label="Gráfico de receita mensal" role="img"></canvas>
+          </div>
+        </div>
 
+        <!-- Gráfico de pizza — coluna 4 (alinha com Em Atraso) -->
+        <div class="chart-card chart-card--doughnut">
+          <div class="chart-card-header">
+            <h3 class="chart-title">
+              <i class="fa-solid fa-chart-pie"></i>
+              Status de Pagamentos
+            </h3>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="statusChart" aria-label="Gráfico de status de pagamentos" role="img"></canvas>
+          </div>
+          <div class="chart-legend" id="statusChartLegend">
+            <!-- Populated by JS -->
+          </div>
         </div>
 
       </section>
@@ -233,7 +227,7 @@
         <!-- Toolbar: filters + view toggle -->
         <div class="payments-toolbar">
           <div class="payment-filters">
-            <div class="search-wrapper search-wrapper--sm">
+            <div class="search-wrapper">
               <i class="fa-solid fa-magnifying-glass search-icon"></i>
               <input
                 type="search"

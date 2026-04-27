@@ -94,6 +94,10 @@
   --z-overlay:  110;
   --z-modal:    120;
   --z-toast:    200;
+
+  /* Controles — altura unificada para inputs, selects e botões */
+  --control-h:    40px;
+  --control-h-sm: 32px;
 }
 
 /* --------------------------------------------------------------------------
@@ -534,7 +538,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
+  height: var(--control-h);
+  padding: 0 20px;
   border-radius: var(--radius-md);
   font-size: .875rem;
   font-weight: 600;
@@ -545,6 +550,7 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .btn:focus-visible {
@@ -600,8 +606,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   transform: translateY(-1px);
 }
 
-.btn--sm { padding: 7px 14px; font-size: .8125rem; gap: 6px; }
-.btn--lg { padding: 14px 28px; font-size: 1rem; }
+.btn--sm { height: var(--control-h-sm); padding: 0 14px; font-size: .8125rem; gap: 6px; }
+.btn--lg { height: 48px; padding: 0 28px; font-size: 1rem; }
 .btn--full { width: 100%; }
 
 .btn-icon-only {
@@ -661,7 +667,20 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 }
 
 .form-input,
-.form-select,
+.form-select {
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 13px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--text-primary);
+  font-size: .9rem;
+  transition: all var(--transition-fast);
+  outline: none;
+  box-sizing: border-box;
+}
+
 .form-textarea {
   width: 100%;
   padding: 10px 13px;
@@ -672,9 +691,12 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   font-size: .9rem;
   transition: all var(--transition-fast);
   outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 80px;
 }
 
-.input-wrapper .form-input { padding-left: 38px; }
+.input-wrapper .form-input { padding-left: 38px; padding-right: 13px; }
 
 .form-input:focus,
 .form-select:focus,
@@ -689,10 +711,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 
 .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
 
-.form-select--sm { padding: 7px 30px 7px 10px; font-size: .8125rem; }
-.form-input--sm  { padding: 7px 10px; font-size: .8125rem; }
-
-.form-textarea { resize: vertical; min-height: 80px; }
+.form-select--sm { height: var(--control-h-sm); padding: 0 30px 0 10px; font-size: .8125rem; }
+.form-input--sm  { height: var(--control-h-sm); padding: 0 10px; font-size: .8125rem; }
 
 .form-error {
   font-size: .75rem;
@@ -816,8 +836,6 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   min-width: 0;
 }
 
-
-
 .search-wrapper--sm { flex: none; width: 100%; }
 
 .search-icon {
@@ -832,7 +850,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 
 .search-input {
   width: 100%;
-  padding: 9px 13px 9px 36px;
+  height: var(--control-h);
+  padding: 0 13px 0 36px;
   border: 1.5px solid var(--gray-300);
   border-radius: var(--radius-md);
   background: var(--color-white);
@@ -840,6 +859,7 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   color: var(--text-primary);
   transition: all var(--transition-fast);
   outline: none;
+  box-sizing: border-box;
 }
 .search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(3,45,111,.1); }
 .search-input::placeholder { color: var(--gray-400); }
@@ -1768,14 +1788,20 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 /* --------------------------------------------------------------------------
    26. FINANCE — CHARTS
    -------------------------------------------------------------------------- */
-.finance-summary-section { animation: slideUp .4s both; margin-bottom: 24px; }
-
-.charts-row {
+/* Grid unificado: stat cards + gráficos compartilham as mesmas 4 colunas */
+.finance-summary-section {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-top: 16px;
+  animation: slideUp .4s both;
+  margin-bottom: 24px;
 }
+
+/* Gráfico de barras ocupa colunas 1–3 (alinha com Receita Total, Recebido e Pendente) */
+.chart-card--bar   { grid-column: 1 / 4; }
+
+/* Gráfico de pizza ocupa coluna 4 (alinha com Em Atraso) */
+.chart-card--doughnut { grid-column: 4; }
 
 .chart-card {
   background: var(--color-white);
@@ -1853,7 +1879,9 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   margin-bottom: 16px;
 }
 
-.payment-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.payment-filters { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
+.payment-filters .search-wrapper { flex: 1; min-width: 0; }
+.payment-filters .form-select { flex: 0 0 auto; width: auto; min-width: 160px; }
 
 .payment-cards-grid {
   display: grid;
@@ -1933,8 +1961,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 /* Table view toggle */
 .table-view-toggle { display: flex; border: 1.5px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; }
 .view-toggle-btn {
-  width: 34px;
-  height: 30px;
+  width: 45px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2715,9 +2743,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 .sch-time::-webkit-inner-spin-button         { display: none; }
 
 .btn-remove-schedule {
-  /* Mesma altura que os form-inputs: padding 10px × 2 + linha ~1.35 × 0.9rem + bordas 3px */
-  height: 44px;
-  width: 44px;
+  height: var(--control-h);
+  width: var(--control-h);
   background: none;
   border: 1.5px solid var(--color-danger-light, #fca5a5);
   border-radius: var(--radius-md);

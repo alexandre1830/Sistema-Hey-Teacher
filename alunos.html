@@ -121,7 +121,7 @@
     <main class="page-content" id="mainContent">
 
       <!-- Search & Filter Bar -->
-      <section class="toolbar" aria-label="Busca e filtros">
+      <section class="toolbar toolbar--cards-align" aria-label="Busca e filtros">
         <div class="search-wrapper">
           <i class="fa-solid fa-magnifying-glass search-icon"></i>
           <input
@@ -273,6 +273,17 @@
               <input type="number" id="studentPayDay" name="payDay" class="form-input" placeholder="Ex: 10" min="1" max="31" />
             </div>
           </div>
+
+          <div class="form-row form-row--2">
+            <div class="form-group">
+              <label for="studentContractStart" class="form-label">Início do contrato</label>
+              <input type="date" id="studentContractStart" name="contractStart" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label for="studentContractEnd" class="form-label">Término do contrato</label>
+              <input type="date" id="studentContractEnd" name="contractEnd" class="form-input" />
+            </div>
+          </div>
         </fieldset>
 
       </form>
@@ -383,6 +394,18 @@
                 <i class="fa-solid fa-circle-dollar-to-slot"></i> Mensalidade
               </span>
               <span class="info-value" id="detailFee">—</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">
+                <i class="fa-regular fa-calendar-plus"></i> Início do contrato
+              </span>
+              <span class="info-value" id="detailContractStart">—</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">
+                <i class="fa-regular fa-calendar-minus"></i> Término do contrato
+              </span>
+              <span class="info-value" id="detailContractEnd">—</span>
             </div>
           </div>
           <div class="info-item info-item--full">

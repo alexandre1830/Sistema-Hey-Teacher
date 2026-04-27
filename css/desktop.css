@@ -43,6 +43,13 @@
     font-size: 1.25rem;
   }
 
+  .topbar-actions {
+    margin-right: 12px;
+  }
+
+  .topbar-title {
+    margin-left: 12px;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -98,6 +105,11 @@
   }
 
   .stats-grid--finance {
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  }
+
+  /* Grid unificado de finanças: primeira coluna mais larga (card grande) */
+  .finance-summary-section {
     grid-template-columns: 1.4fr 1fr 1fr 1fr;
   }
 
@@ -169,33 +181,166 @@
 }
 
 /* --------------------------------------------------------------------------
-   9. CHARTS ROW
+   8b. TOOLBAR ALINHADA AO STATS-GRID (4 colunas fixas) — frequência
    -------------------------------------------------------------------------- */
-@media (max-width: 1023px) {
 
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-card--doughnut .chart-wrapper {
-    height: 240px;
-  }
-
-}
-
+/* ≥1024px: espelha repeat(4, 1fr) do stats-grid.
+   Os 4 filhos (search / datas / selects / botão) caem naturalmente em 1 coluna cada.
+   O 5º filho (results-count) fica na linha de baixo, à direita. */
 @media (min-width: 1024px) {
 
-  .charts-row {
-    grid-template-columns: 1fr 320px;
+  .toolbar--stats-align {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: center;
+    flex-wrap: unset;
+  }
+
+  /* Cancela o max-width do search-wrapper herdado do .toolbar genérico */
+  .toolbar--stats-align .search-wrapper {
+    max-width: none;
+    flex: unset;
+    width: 100%;
+  }
+
+  /* Datas: ocupa a coluna inteira — label + inputs fluem dentro do flex */
+  .toolbar--stats-align .filter-group--dates {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .toolbar--stats-align .filter-group--dates .date-filter {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .toolbar--stats-align .filter-group--dates .date-filter .form-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Selects: cada um cresce para metade da coluna */
+  .toolbar--stats-align .filter-group:not(.filter-group--dates) {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .toolbar--stats-align .filter-group:not(.filter-group--dates) .form-select {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  /* Botão "Limpar filtros": alinha à esquerda da coluna 4 */
+  .toolbar--stats-align .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Results-count: segunda linha, alinhado à direita */
+  .toolbar--stats-align .results-count {
+    grid-column: 1 / -1;
+    margin-left: auto;
   }
 
 }
 
+/* --------------------------------------------------------------------------
+   8c. TOOLBAR ALINHADA AOS CARDS — espelha o cards-grid em cada breakpoint
+   -------------------------------------------------------------------------- */
+
+/* ≥640px: cards-grid = 2 colunas → search | filter-group */
+@media (min-width: 640px) {
+
+  .toolbar--cards-align {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    flex-wrap: unset;
+  }
+
+  /* Cancela o max-width que o .toolbar genérico impõe no search */
+  .toolbar--cards-align .search-wrapper {
+    max-width: none;
+    flex: unset;
+  }
+
+  /* filter-group ocupa col 2: os dois selects ficam lado a lado dentro dele */
+  .toolbar--cards-align .filter-group {
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .toolbar--cards-align .filter-group .form-select {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  /* results-count desce para a segunda linha, alinhado à direita */
+  .toolbar--cards-align .results-count {
+    grid-column: 1 / -1;
+    margin-left: auto;
+  }
+
+}
+
+/* ≥1024px: cards-grid = 3 colunas → search | filter-group (span 2) */
+@media (min-width: 1024px) {
+
+  .toolbar--cards-align {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .toolbar--cards-align .filter-group {
+    grid-column: 2 / 4; /* ocupa colunas 2 e 3, cada select ≈ 1 card */
+  }
+
+}
+
+/* ≥1280px: cards-grid = 4 colunas → search | filter-group (span 2) | vazio */
 @media (min-width: 1280px) {
 
-  .charts-row {
-    grid-template-columns: 1fr 360px;
+  .toolbar--cards-align {
+    grid-template-columns: repeat(4, 1fr);
   }
+
+  /* filter-group continua spanning 2 colunas (2 e 3), col 4 fica vazia */
+  .toolbar--cards-align .filter-group {
+    grid-column: 2 / 4;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
+   9. PAYMENTS TOOLBAR — alinha com a grade de cards de pagamento
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+  /* Espelha repeat(2, 1fr) do payment-cards-grid */
+  .payments-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .payment-filters      { grid-column: 1; }
+  .table-view-toggle    { grid-column: 2; justify-self: end; }
+
+}
+
+@media (min-width: 1200px) {
+
+  /* Espelha repeat(3, 1fr) do payment-cards-grid */
+  .payments-toolbar {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .table-view-toggle { grid-column: 3; }
 
 }
 
@@ -251,11 +396,6 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .payments-toolbar {
-    flex-wrap: nowrap;
-    align-items: center;
-  }
-
 }
 
 @media (min-width: 1200px) {
@@ -273,6 +413,29 @@
 
   .calendar-section .section-header {
     flex-wrap: nowrap;
+  }
+
+}
+
+/* ≥1024px: section-header vira grid de 4 colunas, espelhando o stats-grid.
+   O título ocupa colunas 1–3 e os botões ocupam a coluna 4 (= largura de
+   um stat-card), alinhando visualmente com o card "Receita do Mês". */
+@media (min-width: 1024px) {
+
+  .calendar-section .section-header {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: center;
+  }
+
+  .calendar-section .section-title {
+    grid-column: 1 / 4;
+  }
+
+  .calendar-section .calendar-view-controls {
+    grid-column: 4;
+    width: 100%;
   }
 
 }

@@ -31,24 +31,28 @@ HT.storage = (() => {
       classId:    r.class_id    || null,
       level:      r.level       || '',
       schedules:  r.schedules   || [],
-      monthlyFee: r.monthly_fee,
-      payDay:     r.pay_day,
-      notes:      r.notes       || '',
-      createdAt:  r.created_at,
+      monthlyFee:    r.monthly_fee,
+      payDay:        r.pay_day,
+      contractStart: r.contract_start || null,
+      contractEnd:   r.contract_end   || null,
+      notes:         r.notes          || '',
+      createdAt:     r.created_at,
     };
   }
   function _fromStudent(d) {
     return {
-      name:        d.name,
-      age:         d.age         || null,
-      email:       d.email       || null,
-      phone:       d.phone       || null,
-      class_id:    d.classId     || null,
-      level:       d.level       || null,
-      schedules:   d.schedules   || [],
-      monthly_fee: d.monthlyFee  ? +d.monthlyFee : null,
-      pay_day:     d.payDay      ? +d.payDay      : null,
-      notes:       d.notes       || '',
+      name:           d.name,
+      age:            d.age           || null,
+      email:          d.email         || null,
+      phone:          d.phone         || null,
+      class_id:       d.classId       || null,
+      level:          d.level         || null,
+      schedules:      d.schedules     || [],
+      monthly_fee:    d.monthlyFee    ? +d.monthlyFee : null,
+      pay_day:        d.payDay        ? +d.payDay      : null,
+      contract_start: d.contractStart || null,
+      contract_end:   d.contractEnd   || null,
+      notes:          d.notes         || '',
     };
   }
 

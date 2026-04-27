@@ -137,6 +137,36 @@
 }
 
 /* --------------------------------------------------------------------------
+   5b. FINANCE SUMMARY — grid unificado no mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 479px) {
+
+  .finance-summary-section {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card--bar,
+  .chart-card--doughnut {
+    grid-column: 1;
+  }
+
+}
+
+@media (min-width: 480px) and (max-width: 1023px) {
+
+  .finance-summary-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Ambos os gráficos ocupam toda a largura no tablet */
+  .chart-card--bar,
+  .chart-card--doughnut {
+    grid-column: 1 / -1;
+  }
+
+}
+
+/* --------------------------------------------------------------------------
    6. CARDS GRID — coluna única / 2 colunas no mobile
    -------------------------------------------------------------------------- */
 @media (max-width: 479px) {
@@ -200,7 +230,8 @@
     text-align: center;
   }
 
-  .toolbar--wrap .filter-group--dates {
+  .toolbar--wrap .filter-group--dates,
+  .toolbar--stats-align .filter-group--dates {
     flex-direction: column;
     gap: 8px;
   }
@@ -209,20 +240,16 @@
     width: 100%;
   }
 
-  .date-filter .form-input--sm {
+  .date-filter .form-input {
     flex: 1;
   }
 
 }
 
 /* --------------------------------------------------------------------------
-   9. CHARTS — empilhados no mobile
+   9. CHARTS — altura reduzida no mobile
    -------------------------------------------------------------------------- */
 @media (max-width: 767px) {
-
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
 
   .chart-card--bar .chart-wrapper {
     height: 200px;
@@ -481,6 +508,16 @@
 
   .payment-cards-grid {
     grid-template-columns: 1fr;
+  }
+
+  .payment-filters {
+    flex-wrap: wrap;
+  }
+
+  .payment-filters .form-select {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
   }
 
   .topbar-actions .period-selector .period-label {
@@ -917,4 +954,14 @@
     margin-bottom: 14px;
   }
 
+}
+
+/* Export Atterndance button */
+@media (max-width: 767px) {
+  #exportAttBtn{
+    width: 120px;
+    justify-content: center;
+    padding: 10px;
+    font-size: .9rem;
+  }
 }

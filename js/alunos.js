@@ -205,14 +205,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('studentModalTitle').textContent = student ? 'Editar Aluno' : 'Novo Aluno';
 
     if (student) {
-      utils.setInputValue('studentName',     student.name);
-      utils.setInputValue('studentAge',      student.age);
-      utils.setInputValue('studentEmail',    student.email);
-      utils.setInputValue('studentPhone',    student.phone);
-      utils.setInputValue('studentLevel',    student.level);
-      utils.setInputValue('studentNotes',    student.notes);
-      utils.setInputValue('studentFee',      student.monthlyFee);
-      utils.setInputValue('studentPayDay',   student.payDay);
+      utils.setInputValue('studentName',          student.name);
+      utils.setInputValue('studentAge',           student.age);
+      utils.setInputValue('studentEmail',         student.email);
+      utils.setInputValue('studentPhone',         student.phone);
+      utils.setInputValue('studentLevel',         student.level);
+      utils.setInputValue('studentNotes',         student.notes);
+      utils.setInputValue('studentFee',           student.monthlyFee);
+      utils.setInputValue('studentPayDay',        student.payDay);
+      utils.setInputValue('studentContractStart', student.contractStart);
+      utils.setInputValue('studentContractEnd',   student.contractEnd);
       populateClassSelect(student.classId);
       initStudentSchedules(getStudentSchedules(student));
     } else {
@@ -257,17 +259,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       await storage.saveStudent({
-        id:         id || undefined,
+        id:            id || undefined,
         name,
-        age:        utils.getInputValue('studentAge')   || null,
-        email:      utils.getInputValue('studentEmail') || '',
-        phone:      utils.getInputValue('studentPhone') || '',
-        classId:    utils.getInputValue('studentClass') || null,
+        age:           utils.getInputValue('studentAge')           || null,
+        email:         utils.getInputValue('studentEmail')         || '',
+        phone:         utils.getInputValue('studentPhone')         || '',
+        classId:       utils.getInputValue('studentClass')         || null,
         level,
         schedules,
-        notes:      utils.getInputValue('studentNotes')  || '',
-        monthlyFee: Number(utils.getInputValue('studentFee'))    || 0,
-        payDay:     Number(utils.getInputValue('studentPayDay')) || null,
+        notes:         utils.getInputValue('studentNotes')         || '',
+        monthlyFee:    Number(utils.getInputValue('studentFee'))   || 0,
+        payDay:        Number(utils.getInputValue('studentPayDay'))|| null,
+        contractStart: utils.getInputValue('studentContractStart') || null,
+        contractEnd:   utils.getInputValue('studentContractEnd')   || null,
       });
 
       modals.close('studentModalOverlay');
@@ -293,13 +297,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       `<span style="font-size:1.5rem;font-weight:700;color:var(--color-primary)">${utils.getInitials(s.name)}</span>`;
 
     const cls = s.classId ? findClass(s.classId) : null;
-    utils.setTextContent('detailEmail',  s.email  || '—');
-    utils.setTextContent('detailPhone',  utils.formatPhone(s.phone));
-    utils.setTextContent('detailAge',    s.age    ? `${s.age} anos` : '—');
-    utils.setTextContent('detailClass',  cls?.name || 'Individual');
-    utils.setTextContent('detailLevel',  utils.formatLevel(s.level));
-    utils.setTextContent('detailFee',    s.monthlyFee ? utils.formatCurrency(s.monthlyFee)+'/mês' : '—');
-    utils.setTextContent('detailNotes',  s.notes  || '—');
+    utils.setTextContent('detailEmail',         s.email  || '—');
+    utils.setTextContent('detailPhone',         utils.formatPhone(s.phone));
+    utils.setTextContent('detailAge',           s.age    ? `${s.age} anos` : '—');
+    utils.setTextContent('detailClass',         cls?.name || 'Individual');
+    utils.setTextContent('detailLevel',         utils.formatLevel(s.level));
+    utils.setTextContent('detailFee',           s.monthlyFee ? utils.formatCurrency(s.monthlyFee)+'/mês' : '—');
+    utils.setTextContent('detailContractStart', utils.formatDate(s.contractStart));
+    utils.setTextContent('detailContractEnd',   utils.formatDate(s.contractEnd));
+    utils.setTextContent('detailNotes',         s.notes  || '—');
 
     // Horários
     const schedules = getStudentSchedules(s);

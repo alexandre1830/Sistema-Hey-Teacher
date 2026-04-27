@@ -1002,6 +1002,11 @@
   flex: 1;
 }
 
+td.text-small.textmuted{
+  font-size: .6875rem;
+  color: var(--gray-600);
+}
+
 /* Compatibilidade — mantém .att-curriculum-cat-label caso apareça */
 .att-curriculum-cat-label {
   padding: 5px 12px;
