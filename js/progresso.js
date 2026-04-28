@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (countEl) countEl.textContent = `${list.length} aluno${list.length !== 1 ? 's' : ''}`;
 
     if (!list.length) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;min-height:200px;background:var(--color-white);border:1.5px dashed var(--gray-200);border-radius:var(--radius-lg)">
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;min-height:200px;border:1.5px dashed var(--gray-200);border-radius:var(--radius-lg)">
         <i class="fa-solid fa-chart-line empty-state-icon"></i>
         <p class="empty-state-title">${allStudents.length ? 'Nenhum aluno encontrado' : 'Nenhum aluno cadastrado'}</p>
         <p class="empty-state-desc">${allStudents.length ? 'Tente outros filtros' : 'Cadastre alunos primeiro em "Alunos"'}</p>
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!list) return;
 
     if (!allCategories.length) {
-      list.innerHTML = `<div class="empty-state" style="min-height:200px;background:var(--color-white);border:1.5px dashed var(--gray-200);border-radius:var(--radius-lg)">
+      list.innerHTML = `<div class="empty-state" style="min-height:200px; margin-top: 16px; border:1.5px dashed var(--gray-200);border-radius:var(--radius-lg)">
         <i class="fa-solid fa-book-open empty-state-icon"></i>
         <p class="empty-state-title">Nenhuma categoria criada</p>
         <p class="empty-state-desc">Clique em "Nova Categoria" para começar, ou use "Importar CEFR" para carregar o padrão internacional.</p>

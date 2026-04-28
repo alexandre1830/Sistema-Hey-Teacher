@@ -1076,7 +1076,7 @@ td.text-small.textmuted{
 [data-theme="dark"] .prog-cat-minibar      { background: var(--gray-300); }
 [data-theme="dark"] .prog-item-row         { border-bottom-color: var(--gray-200); }
 [data-theme="dark"] .prog-card { background: var(--gray-100); border-color: var(--gray-200); }
-[data-theme="dark"] .prog-cards-grid { margin-top: 16px;}
+[data-theme="dark"] .prog-cards-grid { margin-top: 16px; }
 
 [data-theme="dark"] .curriculum-category    { background: var(--gray-100); border-color: var(--gray-200); }
 [data-theme="dark"] .curriculum-cat-header  { background: var(--gray-100); border-bottom-color: var(--gray-200); }
