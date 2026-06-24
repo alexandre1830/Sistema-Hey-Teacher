@@ -368,8 +368,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       row.querySelector('.att-remove-student').addEventListener('click', () => {
         row.remove();
         _syncIndividualEmpty();
-        _refreshIndividualSearch();  // re-abre o dropdown se tiver busca ativa
-        _refreshIndividualSelect();  // recoloca o aluno nas opções do seletor
+        _refreshIndividualSearch();  // recoloca o aluno na lista do combobox
       });
     }
 
@@ -393,111 +392,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  /* ---- Atualiza o dropdown de busca (exclui já adicionados) ---- */
+  /* Guardamos a função de re-render do combobox para sincronizar ao remover alunos */
+  let _individualRefresh = null;
+
+  /* ---- Re-renderiza a lista do combobox (exclui já adicionados) ---- */
   function _refreshIndividualSearch() {
-    const inp = document.getElementById('attStudentSearchInput');
-    if (inp && inp.value.trim()) inp.dispatchEvent(new Event('input'));
+    if (_individualRefresh) _individualRefresh();
   }
 
-  /* ---- Configura a busca de alunos no modo individual ---- */
+  /* ---- Campo único: busca por digitação + lista completa no mesmo input ---- */
   function _setupIndividualSearch() {
     const inp      = document.getElementById('attStudentSearchInput');
     const dropdown = document.getElementById('attStudentDropdown');
+    const toggle   = document.getElementById('attComboToggle');
+    const combo    = document.getElementById('attStudentCombo');
     const sel      = document.getElementById('attSelectedStudents');
     if (!inp || !dropdown || !sel) return;
 
     const getAddedIds = () =>
       new Set([...sel.querySelectorAll('.att-student-row')].map(r => r.dataset.studentId));
 
-    inp.addEventListener('input', utils.debounce(() => {
-      const q = inp.value.trim().toLowerCase();
-      if (!q) { dropdown.hidden = true; return; }
-
+    /* Monta as opções a partir da query atual (vazia = lista completa) */
+    function renderList() {
+      const q       = inp.value.trim().toLowerCase();
       const added   = getAddedIds();
       const matches = allStudents
-        .filter(s => s.name.toLowerCase().includes(q) && !added.has(s.id))
-        .slice(0, 7);
+        .filter(s => !added.has(s.id) && (!q || s.name.toLowerCase().includes(q)))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
       if (!matches.length) {
-        dropdown.innerHTML = `<div class="att-dropdown-empty">Nenhum aluno encontrado</div>`;
-      } else {
-        dropdown.innerHTML = matches.map(s => {
-          const lvl = utils.formatLevelShort(s.level || '');
-          return `<div class="att-dropdown-item" data-id="${s.id}" role="option">
-            <span class="att-dropdown-name">${s.name}</span>
-            ${lvl ? `<span class="level-badge">${lvl}</span>` : ''}
-          </div>`;
-        }).join('');
-
-        dropdown.querySelectorAll('.att-dropdown-item').forEach(item => {
-          item.addEventListener('mousedown', (e) => {
-            e.preventDefault(); // evita blur no input antes do click
-            const s = findStudent(item.dataset.id);
-            if (!s) return;
-            const emptyEl = sel.querySelector('.att-individual-empty');
-            if (emptyEl) emptyEl.remove();
-            sel.appendChild(makeStudentRow(s, { removable: true }));
-            inp.value = '';
-            dropdown.hidden = true;
-            _refreshIndividualSelect(); // remove o aluno das opções do seletor
-            inp.focus();
-          });
-        });
+        dropdown.innerHTML = `<div class="att-dropdown-empty">${
+          q ? 'Nenhum aluno encontrado' : 'Todos os alunos já foram adicionados'
+        }</div>`;
+        return;
       }
-      dropdown.hidden = false;
-    }, 200));
 
-    inp.addEventListener('blur', () => {
-      // Pequeno delay para deixar o mousedown do item disparar antes
-      setTimeout(() => { dropdown.hidden = true; }, 150);
-    });
-
-    inp.addEventListener('focus', () => {
-      if (inp.value.trim()) dropdown.hidden = false;
-    });
-  }
-
-  /* ---- Atualiza as opções do <select> (exclui alunos já adicionados) ---- */
-  function _refreshIndividualSelect() {
-    const select = document.getElementById('attStudentSelect');
-    const added  = document.getElementById('attSelectedStudents');
-    if (!select || !added) return;
-
-    const addedIds  = new Set([...added.querySelectorAll('.att-student-row')].map(r => r.dataset.studentId));
-    const available = allStudents
-      .filter(s => !addedIds.has(s.id))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    const prev = select.value; // tenta preservar seleção atual
-    select.innerHTML = `<option value="">Escolher da lista...</option>` +
-      available.map(s => {
+      // Ao buscar, limita a 8 sugestões; sem busca, mostra a lista inteira (rolável)
+      const list = q ? matches.slice(0, 8) : matches;
+      dropdown.innerHTML = list.map(s => {
         const lvl = utils.formatLevelShort(s.level || '');
-        return `<option value="${s.id}">${s.name}${lvl ? ` — ${lvl}` : ''}</option>`;
+        return `<div class="att-dropdown-item" data-id="${s.id}" role="option">
+          <span class="att-dropdown-name">${s.name}</span>
+          ${lvl ? `<span class="level-badge">${lvl}</span>` : ''}
+        </div>`;
       }).join('');
+    }
+    _individualRefresh = () => { if (!dropdown.hidden) renderList(); };
 
-    if (available.find(s => s.id === prev)) select.value = prev;
-  }
+    function open()  {
+      renderList();
+      dropdown.hidden = false;
+      combo?.classList.add('is-open');
+      inp.setAttribute('aria-expanded', 'true');
+    }
+    function close() {
+      dropdown.hidden = true;
+      combo?.classList.remove('is-open');
+      inp.setAttribute('aria-expanded', 'false');
+    }
 
-  /* ---- Configura o botão "Adicionar" do seletor ---- */
-  function _setupIndividualSelect() {
-    const select  = document.getElementById('attStudentSelect');
-    const addBtn  = document.getElementById('attStudentSelectAdd');
-    const sel     = document.getElementById('attSelectedStudents');
-    if (!select || !addBtn || !sel) return;
+    inp.addEventListener('input', utils.debounce(open, 150));
+    inp.addEventListener('focus', open);
+    inp.addEventListener('blur', () => setTimeout(close, 150));
 
-    _refreshIndividualSelect(); // popula as opções iniciais
+    /* Botão caret: alterna a lista completa */
+    toggle?.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      if (dropdown.hidden) { inp.focus(); open(); }
+      else { close(); }
+    });
 
-    addBtn.addEventListener('click', () => {
-      const id = select.value;
-      if (!id) return;
-      const s = findStudent(id);
+    /* Seleção de um aluno (delegação) */
+    dropdown.addEventListener('mousedown', (e) => {
+      const item = e.target.closest('.att-dropdown-item');
+      if (!item) return;
+      e.preventDefault(); // evita blur antes do clique
+      const s = findStudent(item.dataset.id);
       if (!s) return;
       const emptyEl = sel.querySelector('.att-individual-empty');
       if (emptyEl) emptyEl.remove();
       sel.appendChild(makeStudentRow(s, { removable: true }));
-      select.value = '';
-      _refreshIndividualSelect();  // remove o aluno das opções
-      _refreshIndividualSearch();  // sincroniza o dropdown de busca
+      inp.value = '';
+      renderList();   // mantém a lista aberta com os restantes
+      inp.focus();
     });
   }
 
@@ -524,37 +501,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    /* ---- MODO INDIVIDUAL: busca manual, sem pré-seleção ---- */
+    /* ---- MODO INDIVIDUAL: campo único (busca + lista) ---- */
     container.classList.add('att-students-selector--individual');
     container.innerHTML = `
       <div class="att-student-search-wrap">
-
-        <!-- Opção 1: busca por nome -->
-        <div class="att-search-option">
-          <span class="att-search-option-label"><i class="fa-solid fa-magnifying-glass"></i> Buscar pelo nome</span>
-          <div style="position:relative">
-            <input type="text" id="attStudentSearchInput" class="form-input att-search-input"
-                   placeholder="Digite o nome do aluno..." autocomplete="off" />
-            <div class="att-student-dropdown" id="attStudentDropdown" hidden></div>
-          </div>
+        <span class="att-search-option-label"><i class="fa-solid fa-user-plus"></i> Adicionar alunos</span>
+        <div class="att-combobox" id="attStudentCombo">
+          <i class="fa-solid fa-magnifying-glass att-combo-icon"></i>
+          <input type="text" id="attStudentSearchInput" class="form-input att-combo-input"
+                 placeholder="Buscar ou escolher da lista..." autocomplete="off"
+                 role="combobox" aria-expanded="false" aria-controls="attStudentDropdown" />
+          <button type="button" id="attComboToggle" class="att-combo-toggle" tabindex="-1" aria-label="Mostrar lista de alunos">
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="att-student-dropdown" id="attStudentDropdown" role="listbox" hidden></div>
         </div>
-
-        <!-- Divisor -->
-        <div class="att-search-or"><span>ou</span></div>
-
-        <!-- Opção 2: seletor da lista completa -->
-        <div class="att-search-option">
-          <span class="att-search-option-label"><i class="fa-solid fa-list"></i> Escolher da lista</span>
-          <div class="att-select-row">
-            <select id="attStudentSelect" class="form-select" style="flex:1">
-              <option value="">Escolher da lista...</option>
-            </select>
-            <button type="button" id="attStudentSelectAdd" class="btn btn--primary" title="Adicionar aluno">
-              <i class="fa-solid fa-plus"></i> Adicionar
-            </button>
-          </div>
-        </div>
-
       </div>
       <div id="attSelectedStudents">
         <div class="att-individual-empty">
@@ -564,7 +525,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>`;
 
     _setupIndividualSearch();
-    _setupIndividualSelect();
   }
 
   /* Quick actions */

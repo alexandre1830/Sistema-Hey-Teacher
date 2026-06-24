@@ -2100,13 +2100,6 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   background: var(--gray-50);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-/* Each option block (busca / lista) */
-.att-search-option {
-  display: flex;
-  flex-direction: column;
   gap: 6px;
 }
 
@@ -2121,46 +2114,62 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
   gap: 5px;
 }
 
-/* "ou" divider */
-.att-search-or {
+/* ---- Combobox: busca + lista no mesmo campo ---- */
+.att-combobox {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+}
+
+.att-combo-icon {
+  position: absolute;
+  left: 12px;
+  font-size: .85rem;
   color: var(--gray-400);
-  font-size: .75rem;
-  font-weight: 600;
-}
-.att-search-or::before,
-.att-search-or::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--gray-200);
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* Row with select + add button */
-.att-select-row {
+.att-combo-input {
+  width: 100%;
+  padding-left: 34px;
+  padding-right: 38px;
+}
+
+.att-combo-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  gap: 8px;
   align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--gray-400);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
-
-/* Search input (full-width inside its option block) */
-.att-search-input { width: 100%; }
+.att-combo-toggle:hover { color: var(--text-secondary); background: var(--gray-100); }
+.att-combo-toggle i { transition: transform var(--transition-fast); }
+.att-combobox.is-open .att-combo-toggle i { transform: rotate(180deg); }
 
 /* Dropdown list */
 .att-student-dropdown {
   position: absolute;
-  top: calc(100% - 12px);
-  left: 16px;
-  right: 16px;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
   z-index: 200;
+  max-height: 264px;
+  overflow-y: auto;
   background: var(--color-white);
   border: 1.5px solid var(--gray-200);
-  border-top: none;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border-radius: var(--radius-lg);
   box-shadow: 0 6px 16px rgba(0,0,0,.10);
-  overflow: hidden;
 }
 
 .att-dropdown-item {
