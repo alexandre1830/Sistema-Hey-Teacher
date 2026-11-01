@@ -139,6 +139,11 @@
           />
         </div>
         <div class="filter-group">
+          <select class="form-select" id="filterStatus" aria-label="Filtrar por situação">
+            <option value="active">Alunos ativos</option>
+            <option value="all">Todos (ativos e inativos)</option>
+            <option value="inactive">Somente inativos</option>
+          </select>
           <select class="form-select" id="filterLevel" aria-label="Filtrar por nível">
             <option value="">Todos os níveis</option>
             <option value="beginner">Iniciante</option>
@@ -253,6 +258,14 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="studentStatus" class="form-label">Situação</label>
+            <select id="studentStatus" name="status" class="form-select">
+              <option value="active">Ativo</option>
+              <option value="inactive">Inativo (concluiu o curso ou saiu da escola)</option>
+            </select>
+          </div>
+
           <div id="studentSchedules">
             <!-- Horários adicionados dinamicamente pelo JS -->
           </div>
@@ -321,7 +334,10 @@
           </div>
           <div>
             <h3 class="modal-title" id="detailStudentName"></h3>
-            <span class="modal-subtitle" id="detailStudentLevel"></span>
+            <span class="modal-subtitle">
+              <span id="detailStudentLevel"></span>
+              <span id="detailStudentStatus"></span>
+            </span>
           </div>
         </div>
         <div class="modal-header-actions">

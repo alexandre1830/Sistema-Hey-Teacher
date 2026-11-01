@@ -1682,6 +1682,23 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 .badge--paid      { background: var(--color-success-surface); color: var(--color-success); }
 .badge--pending   { background: var(--color-warning-surface); color: var(--color-warning); }
 .badge--overdue   { background: var(--color-danger-surface);  color: var(--color-danger); }
+.badge--active    { background: var(--color-success-surface); color: var(--color-success); }
+.badge--inactive  { background: var(--gray-100); color: var(--gray-500); }
+
+/* Badge menor quando acompanha o nome do aluno no card */
+.student-card-name .badge {
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: .65rem;
+  vertical-align: middle;
+}
+
+/* Card de aluno inativo — visualmente atenuado */
+.student-card--inactive { opacity: .72; }
+.student-card--inactive .student-card-avatar { filter: grayscale(1); }
+
+/* Espaçamento do badge de situação ao lado do nível, no detalhe */
+.modal-subtitle #detailStudentStatus { margin-left: 8px; }
 
 .level-badge {
   display: inline-block;

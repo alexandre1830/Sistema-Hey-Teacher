@@ -20,8 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const grid        = document.getElementById('studentsGrid');
   const countEl     = document.getElementById('studentsCount');
   const searchInput = document.getElementById('studentSearch');
-  const filterLevel = document.getElementById('filterLevel');
-  const filterClass = document.getElementById('filterClass');
+  const filterLevel  = document.getElementById('filterLevel');
+  const filterClass  = document.getElementById('filterClass');
+  const filterStatus = document.getElementById('filterStatus');
 
   /* ====== Carregar e Renderizar ====== */
   async function load() {
@@ -34,11 +35,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function getFiltered() {
-    const q     = (searchInput?.value || '').toLowerCase();
-    const level = filterLevel?.value || '';
-    const cls   = filterClass?.value  || '';
+    const q      = (searchInput?.value || '').toLowerCase();
+    const level  = filterLevel?.value  || '';
+    const cls    = filterClass?.value  || '';
+    const status = filterStatus?.value || 'active';
 
     return allStudents.filter(s => {
+      const st = s.status || 'active';
+      if (status === 'active'   && st !== 'active')   return false;
+      if (status === 'inactive' && st !== 'inactive') return false;
       if (q     && !s.name.toLowerCase().includes(q)) return false;
       if (level && s.level   !== level) return false;
       if (cls   && s.classId !== cls)   return false;
@@ -97,12 +102,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? `<div class="student-card-meta-item"><i class="fa-regular fa-envelope"></i>${s.email}</div>` : '',
     ].filter(Boolean).join('');
 
+    const isInactive = (s.status || 'active') === 'inactive';
+
     return `
-      <div class="student-card" data-id="${s.id}" role="button" tabindex="0" aria-label="Ver detalhes de ${s.name}">
+      <div class="student-card${isInactive ? ' student-card--inactive' : ''}" data-id="${s.id}" role="button" tabindex="0" aria-label="Ver detalhes de ${s.name}">
         <div class="student-card-header">
           <div class="student-card-avatar">${utils.getInitials(s.name)}</div>
           <div class="student-card-info">
-            <div class="student-card-name">${s.name}</div>
+            <div class="student-card-name">
+              ${s.name}
+              ${isInactive ? '<span class="badge badge--inactive">Inativo</span>' : ''}
+            </div>
             <div class="student-card-level">${utils.formatLevel(s.level)}</div>
           </div>
         </div>
@@ -125,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   searchInput?.addEventListener('input',  utils.debounce(render, 250));
   filterLevel?.addEventListener('change', render);
   filterClass?.addEventListener('change', render);
+  filterStatus?.addEventListener('change', render);
 
   /* ====== Builder de Horários ====== */
   const DAY_OPTIONS = [
@@ -216,9 +227,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       utils.setInputValue('studentPayDay',        student.payDay);
       utils.setInputValue('studentContractStart', student.contractStart);
       utils.setInputValue('studentContractEnd',   student.contractEnd);
+      utils.setInputValue('studentStatus',         student.status || 'active');
       populateClassSelect(student.classId);
       initStudentSchedules(getStudentSchedules(student));
     } else {
+      utils.setInputValue('studentStatus', 'active');
       populateClassSelect(null);
       initStudentSchedules([]);
     }
@@ -266,6 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         email:         utils.getInputValue('studentEmail')         || '',
         phone:         utils.getInputValue('studentPhone')         || '',
         origin:        utils.getInputValue('studentOrigin')        || '',
+        status:        utils.getInputValue('studentStatus')        || 'active',
         classId:       utils.getInputValue('studentClass')         || null,
         level,
         schedules,
@@ -295,6 +309,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('detailStudentName').textContent  = s.name;
     document.getElementById('detailStudentLevel').textContent = utils.formatLevel(s.level);
+    const statusEl = document.getElementById('detailStudentStatus');
+    if (statusEl) {
+      const inactive = (s.status || 'active') === 'inactive';
+      statusEl.innerHTML = inactive
+        ? '<span class="badge badge--inactive">Inativo</span>'
+        : '<span class="badge badge--active">Ativo</span>';
+    }
     document.getElementById('detailAvatar').innerHTML =
       `<span style="font-size:1.5rem;font-weight:700;color:var(--color-primary)">${utils.getInitials(s.name)}</span>`;
 
