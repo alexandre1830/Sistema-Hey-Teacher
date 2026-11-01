@@ -417,7 +417,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const q       = inp.value.trim().toLowerCase();
       const added   = getAddedIds();
       const matches = allStudents
-        .filter(s => !added.has(s.id) && (!q || s.name.toLowerCase().includes(q)))
+        .filter(s => (s.status || 'active') === 'active'
+          && !added.has(s.id) && (!q || s.name.toLowerCase().includes(q)))
         .sort((a, b) => a.name.localeCompare(b.name));
 
       if (!matches.length) {
@@ -488,7 +489,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       container.classList.remove('att-students-selector--individual');
 
       const students = (findClass(classId)?.studentIds || [])
-        .map(id => findStudent(id)).filter(Boolean);
+        .map(id => findStudent(id)).filter(Boolean)
+        .filter(s => (s.status || 'active') === 'active');
 
       if (!students.length) {
         container.innerHTML = `<div class="empty-state empty-state--sm">
@@ -616,9 +618,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sel = document.getElementById('attEditStudentSelect');
     if (sel) {
       sel.innerHTML = '<option value="">Selecione o aluno</option>'
-        + allStudents.map(s =>
-            `<option value="${s.id}"${s.id === record.studentId ? ' selected' : ''}>${s.name}</option>`
-          ).join('');
+        + allStudents
+            .filter(s => (s.status || 'active') === 'active' || s.id === record.studentId)
+            .map(s =>
+              `<option value="${s.id}"${s.id === record.studentId ? ' selected' : ''}>${s.name}</option>`
+            ).join('');
     }
     const errEl = document.getElementById('attEditStudentError');
     if (errEl) errEl.textContent = '';

@@ -55,9 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const list = getFiltered();
 
     if (countEl) {
-      countEl.textContent = list.length === allStudents.length
-        ? `${allStudents.length} aluno${allStudents.length !== 1 ? 's' : ''}`
-        : `${list.length} de ${allStudents.length}`;
+      countEl.textContent = `${list.length} aluno${list.length !== 1 ? 's' : ''}`;
     }
 
     const cards = list.map(s => buildCard(s)).join('');
