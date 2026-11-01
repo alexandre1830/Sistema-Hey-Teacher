@@ -209,6 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       utils.setInputValue('studentAge',           student.age);
       utils.setInputValue('studentEmail',         student.email);
       utils.setInputValue('studentPhone',         student.phone);
+      utils.setInputValue('studentOrigin',        student.origin);
       utils.setInputValue('studentLevel',         student.level);
       utils.setInputValue('studentNotes',         student.notes);
       utils.setInputValue('studentFee',           student.monthlyFee);
@@ -264,6 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         age:           utils.getInputValue('studentAge')           || null,
         email:         utils.getInputValue('studentEmail')         || '',
         phone:         utils.getInputValue('studentPhone')         || '',
+        origin:        utils.getInputValue('studentOrigin')        || '',
         classId:       utils.getInputValue('studentClass')         || null,
         level,
         schedules,
@@ -301,6 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     utils.setTextContent('detailPhone',         utils.formatPhone(s.phone));
     utils.setTextContent('detailAge',           s.age    ? `${s.age} anos` : '—');
     utils.setTextContent('detailClass',         cls?.name || 'Individual');
+    utils.setTextContent('detailOrigin',        s.origin || '—');
     utils.setTextContent('detailLevel',         utils.formatLevel(s.level));
     utils.setTextContent('detailFee',           s.monthlyFee ? utils.formatCurrency(s.monthlyFee)+'/mês' : '—');
     utils.setTextContent('detailContractStart', utils.formatDate(s.contractStart));
