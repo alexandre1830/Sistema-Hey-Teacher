@@ -66,7 +66,7 @@ HT.calendar = (() => {
 
     /* Aulas individuais (alunos sem turma, com horários próprios) */
     students
-      .filter(s => !s.classId)
+      .filter(s => !s.classId && (s.status || 'active') === 'active')
       .forEach(student => {
         const schedules = (student.schedules && student.schedules.length)
           ? student.schedules
