@@ -238,15 +238,9 @@
   box-shadow: var(--shadow-xs);
 }
 
-/* ---------- Student cards grid ---------- */
-.prog-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-}
-
 /* ---------- Student progress card ---------- */
 .prog-card {
+  min-width: 0;
   background: var(--color-white);
   border: 1.5px solid var(--gray-200);
   border-radius: var(--radius-lg);

@@ -1694,8 +1694,10 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 }
 
 /* Card de aluno inativo — visualmente atenuado */
-.student-card--inactive { opacity: .72; }
-.student-card--inactive .student-card-avatar { filter: grayscale(1); }
+.student-card--inactive,
+.prog-card--inactive { opacity: .72; }
+.student-card--inactive .student-card-avatar,
+.prog-card--inactive .prog-card-avatar { filter: grayscale(1); }
 
 /* Espaçamento do badge de situação ao lado do nível, no detalhe */
 .modal-subtitle #detailStudentStatus { margin-left: 8px; }

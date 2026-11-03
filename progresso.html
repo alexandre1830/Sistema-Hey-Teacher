@@ -78,23 +78,30 @@
 
       <!-- ===== VIEW: Alunos ===== -->
       <div id="studentsView">
-        <section class="toolbar" aria-label="Busca de alunos">
-          <!--<div class="search-wrapper">
+        <section class="toolbar toolbar--cards-align" aria-label="Busca e filtros">
+          <div class="search-wrapper">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="search" id="progStudentSearch" class="search-input" placeholder="Buscar aluno..." aria-label="Buscar aluno" />
-          </div>-->
-          <select class="form-select" id="progFilterLevel" aria-label="Filtrar por nível">
-            <option value="">Todos os níveis</option>
-            <option value="beginner">A1 – Beginner</option>
-            <option value="elementary">A2 – Elementary</option>
-            <option value="intermediate">B1 – Intermediate</option>
-            <option value="upper-intermediate">B2 – Upper Intermediate</option>
-            <option value="advanced">C1 – Advanced</option>
-            <option value="proficient">C2 – Proficient</option>
-          </select>
+            <input type="search" id="progStudentSearch" class="search-input" placeholder="Buscar aluno por nome..." aria-label="Buscar aluno" />
+          </div>
+          <div class="filter-group">
+            <select class="form-select" id="progFilterStatus" aria-label="Filtrar por situação">
+              <option value="active">Alunos ativos</option>
+              <option value="all">Todos</option>
+              <option value="inactive">Somente inativos</option>
+            </select>
+            <select class="form-select" id="progFilterLevel" aria-label="Filtrar por nível">
+              <option value="">Todos os níveis</option>
+              <option value="beginner">A1 – Beginner</option>
+              <option value="elementary">A2 – Elementary</option>
+              <option value="intermediate">B1 – Intermediate</option>
+              <option value="upper-intermediate">B2 – Upper Intermediate</option>
+              <option value="advanced">C1 – Advanced</option>
+              <option value="proficient">C2 – Proficient</option>
+            </select>
+          </div>
           <div class="results-count" id="progStudentsCount" aria-live="polite"></div>
         </section>
-        <section class="prog-cards-grid" id="progCardsGrid" aria-label="Progresso dos alunos">
+        <section class="cards-grid prog-cards-grid" id="progCardsGrid" aria-label="Progresso dos alunos">
           <!-- Populated by JS -->
         </section>
       </div>

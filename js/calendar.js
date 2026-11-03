@@ -125,7 +125,7 @@ HT.calendar = (() => {
 
     calendarInstance = new FullCalendar.Calendar(el, {
       locale: 'pt-br',
-      initialView: 'dayGridMonth',
+      initialView: 'timeGridWeek',
       headerToolbar: {
         left:   'prev,next today',
         center: 'title',

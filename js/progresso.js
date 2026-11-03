@@ -74,11 +74,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const searchInput = document.getElementById('progStudentSearch');
   const filterLevel = document.getElementById('progFilterLevel');
+  const filterStatus = document.getElementById('progFilterStatus');
 
   function getFilteredStudents() {
-    const q     = (searchInput?.value || '').toLowerCase();
-    const level = filterLevel?.value || '';
+    const q      = (searchInput?.value || '').toLowerCase();
+    const level  = filterLevel?.value  || '';
+    const status = filterStatus?.value || 'active';
     return allStudents.filter(s => {
+      if (status !== 'all' && (s.status || 'active') !== status) return false;
       if (q     && !s.name.toLowerCase().includes(q)) return false;
       if (level && s.level !== level) return false;
       return true;
@@ -116,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const doneIds      = new Set(studentProgs.filter(p => p.status === 'realizado').map(p => p.contentId));
     const totalContents = allContents.length;
     const pct = totalContents ? Math.round((doneIds.size / totalContents) * 100) : 0;
+    const isInactive = (s.status || 'active') === 'inactive';
 
     const recentHtml = recent.length
       ? recent.map(p => `
@@ -126,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       : '<p class="prog-card-empty-topics">Nenhum conteúdo registrado ainda</p>';
 
     return `
-      <div class="prog-card" data-id="${s.id}" role="button" tabindex="0" aria-label="Ver progresso de ${s.name}">
+      <div class="prog-card${isInactive ? ' prog-card--inactive' : ''}" data-id="${s.id}" role="button" tabindex="0" aria-label="Ver progresso de ${s.name}">
         <div class="prog-card-header">
           <div class="prog-card-avatar">${utils.getInitials(s.name)}</div>
           <div class="prog-card-info">
@@ -134,6 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="prog-card-meta">
               ${levelShort ? `<span class="level-badge">${levelShort}</span>` : ''}
               ${cls ? `<span class="prog-card-class"><i class="fa-solid fa-users" style="font-size:.65rem"></i> ${cls.name}</span>` : ''}
+              ${isInactive ? '<span class="badge badge--inactive">Inativo</span>' : ''}
             </div>
           </div>
           <i class="fa-solid fa-chevron-right prog-card-arrow"></i>
@@ -153,6 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   searchInput?.addEventListener('input', utils.debounce(renderStudents, 250));
   filterLevel?.addEventListener('change', renderStudents);
+  filterStatus?.addEventListener('change', renderStudents);
 
   /* ========================================================================
      MODAL: Progresso do aluno

@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const monthPaid = payments.filter(p => p.reference === month && p.status === 'paid');
     const revenue   = monthPaid.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-    utils.setTextContent('statStudents', students.length);
+    utils.setTextContent('statStudents', students.filter(s => (s.status || 'active') === 'active').length);
     utils.setTextContent('statClasses',  classes.length);
     utils.setTextContent('statLessons',  monthAtt.length);
     utils.setTextContent('statRevenue',  utils.formatCurrency(revenue));
