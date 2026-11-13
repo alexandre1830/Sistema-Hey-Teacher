@@ -8,6 +8,12 @@ HT.auth = (() => {
 
   const db = HT.supabase;
 
+  /* Raiz do site, derivada do local deste script (js/auth.js) —
+     funciona em qualquer profundidade de pasta (/, /alunos/, ...) */
+  const ROOT = new URL('../', document.currentScript.src).href;
+  const LOGIN_URL     = ROOT;
+  const DASHBOARD_URL = ROOT + 'dashboard/';
+
   /* ====== Sessão ====== */
   async function isAuthenticated() {
     const { data: { session } } = await db.auth.getSession();
@@ -29,13 +35,13 @@ HT.auth = (() => {
   /* ====== Logout ====== */
   async function logout() {
     await db.auth.signOut();
-    window.location.href = 'index.html';
+    window.location.href = LOGIN_URL;
   }
 
   /* ====== Proteção de rotas ====== */
   async function requireAuth() {
     const ok = await isAuthenticated();
-    if (!ok) window.location.replace('index.html');
+    if (!ok) window.location.replace(LOGIN_URL);
   }
 
   function _errorMsg(error) {
@@ -57,8 +63,10 @@ HT.auth = (() => {
 
   /* ====== Auto-init ====== */
   (() => {
-    const page        = window.location.pathname.split('/').pop() || 'index.html';
-    const publicPages = ['index.html', ''];
+    /* A única página pública é o login, na raiz (/ ou /index.html) */
+    const rootPath    = new URL(ROOT).pathname;
+    const path        = window.location.pathname;
+    const isLoginPage = path === rootPath || path === rootPath + 'index.html';
 
     function onReady(fn) {
       if (document.readyState === 'loading')
@@ -66,7 +74,7 @@ HT.auth = (() => {
       else fn();
     }
 
-    if (!publicPages.includes(page)) {
+    if (!isLoginPage) {
       onReady(async () => {
         await requireAuth();
         await populateUserInfo();
@@ -75,7 +83,7 @@ HT.auth = (() => {
       onReady(async () => {
         const authenticated = await isAuthenticated();
         if (authenticated) {
-          window.location.replace('dashboard.html');
+          window.location.replace(DASHBOARD_URL);
           return;
         }
         initLoginForm();
@@ -118,7 +126,8 @@ HT.auth = (() => {
         return;
       }
       const { error } = await db.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/index.html',
+        /* Mantém a mesma URL de antes, já liberada nas configurações do Supabase */
+        redirectTo: ROOT + 'index.html',
       });
       if (error) {
         alertBox.textContent = error.message;
@@ -156,7 +165,7 @@ HT.auth = (() => {
       if (result.success) {
         alertBox.textContent = 'Acesso autorizado. Redirecionando...';
         alertBox.className   = 'login-alert success';
-        setTimeout(() => window.location.replace('dashboard.html'), 800);
+        setTimeout(() => window.location.replace(DASHBOARD_URL), 800);
       } else {
         alertBox.textContent = result.message;
         alertBox.className   = 'login-alert error';
