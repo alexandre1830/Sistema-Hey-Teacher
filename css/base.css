@@ -1659,6 +1659,7 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 }
 .action-btn--edit:hover  { background: var(--color-primary-surface); color: var(--color-primary); }
 .action-btn--delete:hover { background: var(--color-danger-surface); color: var(--color-danger); }
+.action-btn--pay:hover    { background: var(--color-success-surface); color: var(--color-success); }
 
 .empty-row td { padding: 32px 16px; }
 

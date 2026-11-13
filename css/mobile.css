@@ -152,7 +152,8 @@
 
 }
 
-@media (min-width: 480px) and (max-width: 1023px) {
+/* Vai até 1279px: com o menu lateral, 4 colunas não cabem em telas de notebook pequenas */
+@media (min-width: 480px) and (max-width: 1279px) {
 
   .finance-summary-section {
     grid-template-columns: repeat(2, 1fr);

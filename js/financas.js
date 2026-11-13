@@ -40,6 +40,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     return new Set(allStudents.map(s => s.id));
   }
 
+  /* ====== Mensalidades previstas ====== */
+  function lastDayOfMonth(month) {
+    const [y, m] = month.split('-').map(Number);
+    return new Date(y, m, 0).getDate();
+  }
+
+  /* Vencimento no mês: dia de vencimento do aluno (limitado ao último dia do mês);
+     sem dia definido, vence no último dia do mês */
+  function dueDateFor(student, month) {
+    const last = lastDayOfMonth(month);
+    const day  = Math.min(Number(student.payDay) || last, last);
+    return `${month}-${String(day).padStart(2, '0')}`;
+  }
+
+  /* Aluno deve mensalidade no mês: ativo, com valor e dentro do contrato
+     (sem início de contrato, conta a partir do mês de cadastro) */
+  function isBillable(s, month) {
+    if ((s.status || 'active') !== 'active' || !(Number(s.monthlyFee) > 0)) return false;
+    const start = (s.contractStart || s.createdAt || '').slice(0, 7);
+    const end   = (s.contractEnd || '').slice(0, 7);
+    if (start && month < start) return false;
+    if (end   && month > end)   return false;
+    return true;
+  }
+
+  /* Pago é sempre manual; o resto é pendente ou atrasado conforme o vencimento
+     (sem vencimento, vale o último dia do mês de referência) */
+  function effectiveStatus(p) {
+    if (p.status === 'paid') return 'paid';
+    const due = p.dueDate || `${p.reference}-${lastDayOfMonth(p.reference)}`;
+    return utils.isOverdue(due, p.status) ? 'overdue' : 'pending';
+  }
+
+  /* Primeiro mês com algum pagamento lançado: antes dele o sistema não era usado
+     para controlar pagamentos, então não há cobrança automática (sem lançamentos, o mês atual) */
+  function trackingStartMonth() {
+    return allPayments.reduce((min, p) => (p.reference < min ? p.reference : min), utils.getCurrentMonth());
+  }
+
+  /* Pagamentos do mês: registros salvos + mensalidades previstas ainda sem registro */
+  function getMonthPayments(month) {
+    const valid      = activeStudentIds();
+    const saved      = allPayments.filter(p => p.reference === month && valid.has(p.studentId));
+    const withRecord = new Set(saved.map(p => p.studentId));
+    const tracked    = month >= trackingStartMonth();
+    const expected   = allStudents
+      .filter(s => tracked && isBillable(s, month) && !withRecord.has(s.id))
+      .map(s => ({
+        id: null, virtual: true, studentId: s.id, reference: month,
+        amount: Number(s.monthlyFee), dueDate: dueDateFor(s, month), status: 'pending',
+        paidDate: null, method: null,
+      }));
+    return [...saved, ...expected].map(p => ({ ...p, status: effectiveStatus(p) }));
+  }
+
+  /* Faturamento projetado: soma das mensalidades dos alunos ativos no mês */
+  function getProjectedRevenue(month) {
+    return allStudents
+      .filter(s => isBillable(s, month))
+      .reduce((sum, s) => sum + Number(s.monthlyFee), 0);
+  }
+
+  function sumAmount(list) {
+    return list.reduce((s, p) => s + Number(p.amount), 0);
+  }
+
   /* ====== Período ====== */
   function setPeriod(month) {
     currentMonth = month;
@@ -55,19 +121,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ====== Resumo ====== */
   function loadSummary() {
     const valid    = activeStudentIds();
-    const payments = allPayments
-      .filter(p => p.reference === currentMonth && valid.has(p.studentId));
-    const paid     = payments.filter(p => p.status === 'paid');
-    const pending  = payments.filter(p => p.status === 'pending');
-    const overdue  = payments.filter(p => p.status === 'overdue'
-      || (p.status === 'pending' && utils.isOverdue(p.dueDate, p.status)));
+    const payments = getMonthPayments(currentMonth);
 
-    const totalPaid    = paid.reduce((s, p)    => s + Number(p.amount), 0);
-    const totalPending = pending.reduce((s, p) => s + Number(p.amount), 0);
-    const totalOverdue = overdue.reduce((s, p) => s + Number(p.amount), 0);
-    const totalAll     = payments.reduce((s, p)=> s + Number(p.amount), 0);
+    const totalPaid    = sumAmount(payments.filter(p => p.status === 'paid'));
+    const totalPending = sumAmount(payments.filter(p => p.status === 'pending'));
+    const totalOverdue = sumAmount(payments.filter(p => p.status === 'overdue'));
 
-    utils.setTextContent('finTotalMonth',   utils.formatCurrency(totalAll));
+    utils.setTextContent('finTotalMonth',   utils.formatCurrency(getProjectedRevenue(currentMonth)));
     utils.setTextContent('finPaidMonth',    utils.formatCurrency(totalPaid));
     utils.setTextContent('finPendingMonth', utils.formatCurrency(totalPending));
     utils.setTextContent('finOverdueMonth', utils.formatCurrency(totalOverdue));
@@ -184,12 +244,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function getStatusData() {
-    const valid    = activeStudentIds();
-    const payments = allPayments
-      .filter(p => p.reference === currentMonth && valid.has(p.studentId));
-    const paid     = payments.filter(p => p.status === 'paid').reduce((s,p)=>s+Number(p.amount),0);
-    const pending  = payments.filter(p => p.status === 'pending').reduce((s,p)=>s+Number(p.amount),0);
-    const overdue  = payments.filter(p => p.status === 'overdue').reduce((s,p)=>s+Number(p.amount),0);
+    const payments = getMonthPayments(currentMonth);
+    const paid     = sumAmount(payments.filter(p => p.status === 'paid'));
+    const pending  = sumAmount(payments.filter(p => p.status === 'pending'));
+    const overdue  = sumAmount(payments.filter(p => p.status === 'overdue'));
     return {
       labels: ['Pago','Pendente','Em atraso'],
       datasets: [{
@@ -204,13 +262,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderStatusLegend() {
     const legendEl = document.getElementById('statusChartLegend');
     if (!legendEl) return;
-    const valid    = activeStudentIds();
-    const payments = allPayments
-      .filter(p => p.reference === currentMonth && valid.has(p.studentId));
+    const payments = getMonthPayments(currentMonth);
     const items = [
-      { label: 'Pago',       color: '#15803d', value: payments.filter(p=>p.status==='paid').reduce((s,p)=>s+Number(p.amount),0) },
-      { label: 'Pendente',   color: '#b45309', value: payments.filter(p=>p.status==='pending').reduce((s,p)=>s+Number(p.amount),0) },
-      { label: 'Em atraso',  color: '#dc2626', value: payments.filter(p=>p.status==='overdue').reduce((s,p)=>s+Number(p.amount),0) },
+      { label: 'Pago',       color: '#15803d', value: sumAmount(payments.filter(p => p.status === 'paid')) },
+      { label: 'Pendente',   color: '#b45309', value: sumAmount(payments.filter(p => p.status === 'pending')) },
+      { label: 'Em atraso',  color: '#dc2626', value: sumAmount(payments.filter(p => p.status === 'overdue')) },
     ];
     legendEl.innerHTML = items.map(item => `
       <div class="legend-item">
@@ -237,10 +293,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   function getFilteredPayments() {
     const q      = (document.getElementById('paymentSearch')?.value || '').toLowerCase();
     const status = document.getElementById('paymentStatusFilter')?.value || '';
-    const valid  = activeStudentIds();
 
-    return allPayments
-      .filter(p => p.reference === currentMonth && valid.has(p.studentId))
+    return getMonthPayments(currentMonth)
       .filter(p => {
         if (status && p.status !== status) return false;
         if (q) {
@@ -254,6 +308,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderPayments() {
     if (viewMode === 'cards') renderCards();
     else                      renderTable();
+  }
+
+  /* Mensalidade prevista (sem registro) só pode ser registrada; registro salvo pode ser editado/excluído */
+  function paymentActions(p) {
+    if (p.virtual) {
+      return `
+        <button class="action-btn action-btn--pay" data-student-id="${p.studentId}" title="Registrar pagamento">
+          <i class="fa-solid fa-circle-check"></i></button>`;
+    }
+    return `
+      <button class="action-btn action-btn--edit" data-id="${p.id}" title="Editar">
+        <i class="fa-solid fa-pen-to-square"></i></button>
+      <button class="action-btn action-btn--delete" data-id="${p.id}" title="Excluir">
+        <i class="fa-solid fa-trash"></i></button>`;
+  }
+
+  function bindPaymentActions(container) {
+    container.querySelectorAll('.action-btn--edit').forEach(btn =>
+      btn.addEventListener('click', () => openPaymentForm(btn.dataset.id)));
+    container.querySelectorAll('.action-btn--delete').forEach(btn =>
+      btn.addEventListener('click', () => confirmDelete(btn.dataset.id)));
+    container.querySelectorAll('.action-btn--pay').forEach(btn =>
+      btn.addEventListener('click', () => openPaymentForm(null, btn.dataset.studentId, 'paid')));
   }
 
   /* ---------- Cards ---------- */
@@ -296,12 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="payment-record-ref">${utils.formatMonthYear(p.reference)}</span>
           <span class="payment-record-amount">${utils.formatCurrency(p.amount)}</span>
           ${utils.statusBadge(p.status)}
-          <div class="payment-record-actions">
-            <button class="action-btn action-btn--edit" data-id="${p.id}" title="Editar">
-              <i class="fa-solid fa-pen-to-square"></i></button>
-            <button class="action-btn action-btn--delete" data-id="${p.id}" title="Excluir">
-              <i class="fa-solid fa-trash"></i></button>
-          </div>
+          <div class="payment-record-actions">${paymentActions(p)}</div>
         </div>`).join('');
 
       return `
@@ -320,10 +392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>`;
     }).join('');
 
-    container.querySelectorAll('.action-btn--edit').forEach(btn =>
-      btn.addEventListener('click', () => openPaymentForm(btn.dataset.id)));
-    container.querySelectorAll('.action-btn--delete').forEach(btn =>
-      btn.addEventListener('click', () => confirmDelete(btn.dataset.id)));
+    bindPaymentActions(container);
     container.querySelectorAll('.payment-card-add').forEach(btn =>
       btn.addEventListener('click', () => openPaymentForm(null, btn.dataset.studentId)));
   }
@@ -375,20 +444,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td class="text-small text-muted">${p.paidDate ? utils.formatDate(p.paidDate) : '—'}</td>
                 <td class="text-small text-muted">${utils.formatMethod(p.method)}</td>
                 <td>
-                  <div class="table-row-actions">
-                    <button class="action-btn action-btn--edit" data-id="${p.id}" title="Editar">
-                      <i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="action-btn action-btn--delete" data-id="${p.id}" title="Excluir">
-                      <i class="fa-solid fa-trash"></i></button>
-                  </div>
+                  <div class="table-row-actions">${paymentActions(p)}</div>
                 </td>
               </tr>`;
           }).join('');
 
-      tbody.querySelectorAll('.action-btn--edit').forEach(btn =>
-        btn.addEventListener('click', () => openPaymentForm(btn.dataset.id)));
-      tbody.querySelectorAll('.action-btn--delete').forEach(btn =>
-        btn.addEventListener('click', () => confirmDelete(btn.dataset.id)));
+      bindPaymentActions(tbody);
     }
 
     // Paginação
@@ -444,7 +505,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /* ====== Modal Pagamento ====== */
-  function openPaymentForm(paymentId = null, preStudentId = null) {
+  function openPaymentForm(paymentId = null, preStudentId = null, preStatus = 'pending') {
     const form = document.getElementById('paymentForm');
     if (!form) return;
     form.reset();
@@ -464,20 +525,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       utils.setInputValue('paymentReference', payment.reference);
       utils.setInputValue('paymentAmount',    payment.amount);
       utils.setInputValue('paymentDueDate',   payment.dueDate);
-      utils.setInputValue('paymentStatus',    payment.status);
+      utils.setInputValue('paymentStatus',    payment.status === 'paid' ? 'paid' : 'pending');
       utils.setInputValue('paymentDate',      payment.paidDate || '');
       const methodRadio = document.querySelector(`#paymentForm input[name="method"][value="${payment.method}"]`);
       if (methodRadio) methodRadio.checked = true;
       utils.setInputValue('paymentNotes', payment.notes);
     } else {
       utils.setInputValue('paymentReference', currentMonth);
+      utils.setInputValue('paymentStatus',    preStatus);
+      if (preStatus === 'paid') utils.setInputValue('paymentDate', utils.getCurrentDate());
       if (preStudentId) {
         const s = findStudent(preStudentId);
         if (s?.monthlyFee) utils.setInputValue('paymentAmount', s.monthlyFee);
-        if (s?.payDay) {
-          const [y, m] = currentMonth.split('-');
-          utils.setInputValue('paymentDueDate', `${y}-${m}-${String(s.payDay).padStart(2,'0')}`);
-        }
+        if (s) utils.setInputValue('paymentDueDate', dueDateFor(s, currentMonth));
       }
     }
 
@@ -487,10 +547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!sid || payment) return;
       const s = findStudent(sid);
       if (s?.monthlyFee) utils.setInputValue('paymentAmount', s.monthlyFee);
-      if (s?.payDay) {
-        const [y, m] = currentMonth.split('-');
-        utils.setInputValue('paymentDueDate', `${y}-${m}-${String(s.payDay).padStart(2,'0')}`);
-      }
+      if (s) utils.setInputValue('paymentDueDate', dueDateFor(s, currentMonth));
     });
 
     modals.open('paymentModalOverlay');
@@ -519,7 +576,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const method   = document.querySelector('#paymentForm input[name="method"]:checked')?.value || '';
     const id       = document.getElementById('paymentId').value;
-    const status   = document.getElementById('paymentStatus').value;
+    /* Só "pago" é gravado manualmente; atraso é calculado pelo vencimento */
+    const status   = document.getElementById('paymentStatus').value === 'paid' ? 'paid' : 'pending';
     const paidDate = document.getElementById('paymentDate').value || null;
 
     const saveBtn = document.getElementById('paymentModalSave');

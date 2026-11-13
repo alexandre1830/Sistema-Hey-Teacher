@@ -108,10 +108,21 @@
     grid-template-columns: 1.4fr 1fr 1fr 1fr;
   }
 
-  /* Grid unificado de finanças: primeira coluna mais larga (card grande) */
+}
+
+/* Grid unificado de finanças em 4 colunas só a partir de 1280px (abaixo disso não cabe
+   ao lado do menu lateral e usa o 2×2 do tablet). Primeira coluna mais larga (card grande);
+   minmax(0, …) impede o canvas do gráfico de rosca de alargar a 4ª coluna e espremer os cards */
+@media (min-width: 1280px) {
+
   .finance-summary-section {
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
   }
+
+  .finance-summary-section .stat-card       { padding: 20px; gap: 12px; }
+  .finance-summary-section .stat-icon       { width: 40px; height: 40px; font-size: 1.1rem; }
+  .finance-summary-section .stat-value      { font-size: 1.5rem; }
+  .finance-summary-section .stat-value--lg  { font-size: 1.75rem; }
 
 }
 
