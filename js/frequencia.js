@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allClasses     = [];
   let allProgCats    = [];
   let allProgConts   = [];
+  let ctx            = { uid: null, role: null };
+
+  /* Professor só edita/exclui o que ele mesmo lançou (o banco também garante) */
+  const canEdit = r => ctx.role === 'admin' || r.createdBy === ctx.uid;
 
   /* ====== Helpers de busca no cache ====== */
   function findStudent(id) { return allStudents.find(s => s.id === id) || null; }
@@ -35,12 +39,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* ====== Carregar todos os dados ====== */
   async function load() {
-    [allAttendance, allStudents, allClasses, allProgCats, allProgConts] = await Promise.all([
+    [allAttendance, allStudents, allClasses, allProgCats, allProgConts, ctx] = await Promise.all([
       storage.getAttendance(),
       storage.getStudents(),
       storage.getClasses(),
       storage.getProgressCategories(),
       storage.getProgressContents(),
+      storage.getContext(),
     ]);
   }
 
@@ -153,13 +158,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                   ? `<span class="lesson-content-cell" title="${r.lessonContent.replace(/"/g,'&quot;')}">${r.lessonContent.length > 40 ? r.lessonContent.slice(0,40) + '…' : r.lessonContent}</span>`
                   : (r.notes || '—')}</td>
               <td>
-                <div class="table-row-actions">
+                <div class="table-row-actions">${canEdit(r) ? `
                   <button class="action-btn action-btn--edit" data-id="${r.id}" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
                   <button class="action-btn action-btn--delete" data-id="${r.id}" title="Excluir">
                     <i class="fa-solid fa-trash"></i>
-                  </button>
+                  </button>` : `
+                  <span class="text-small text-muted" title="Lançado por outra pessoa">—</span>`}
                 </div>
               </td>
             </tr>`;

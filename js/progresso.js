@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return `
         <div class="curriculum-category" data-cat-id="${cat.id}">
           <div class="curriculum-cat-header">
-            <div class="curriculum-cat-reorder">
+            <div class="curriculum-cat-reorder" data-admin-only>
               <button class="curriculum-reorder-btn" data-action="cat-up" data-id="${cat.id}" ${ci === 0 ? 'disabled' : ''} title="Mover para cima" type="button">
                 <i class="fa-solid fa-chevron-up"></i>
               </button>
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <strong class="curriculum-cat-name">${cat.name}</strong>
             <span class="curriculum-count">${items.length} item${items.length !== 1 ? 's' : ''}</span>
-            <div class="curriculum-cat-actions">
+            <div class="curriculum-cat-actions" data-admin-only>
               <button class="action-btn action-btn--edit" data-action="edit-cat" data-id="${cat.id}" title="Editar categoria" type="button">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="curriculum-items">
             ${items.length ? items.map((item, ii) => `
               <div class="curriculum-item" data-item-id="${item.id}">
-                <div class="curriculum-item-reorder">
+                <div class="curriculum-item-reorder" data-admin-only>
                   <button class="curriculum-reorder-btn" data-action="item-up" data-id="${item.id}" data-cat-id="${cat.id}" ${ii === 0 ? 'disabled' : ''} type="button"><i class="fa-solid fa-chevron-up"></i></button>
                   <button class="curriculum-reorder-btn" data-action="item-down" data-id="${item.id}" data-cat-id="${cat.id}" ${ii === items.length-1 ? 'disabled' : ''} type="button"><i class="fa-solid fa-chevron-down"></i></button>
                 </div>
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <span class="curriculum-item-title">${item.title}</span>
                   ${item.description ? `<span class="curriculum-item-desc">${item.description}</span>` : ''}
                 </div>
-                <div class="curriculum-item-actions">
+                <div class="curriculum-item-actions" data-admin-only>
                   <button class="action-btn action-btn--edit" data-action="edit-item" data-id="${item.id}" data-cat-id="${cat.id}" type="button"><i class="fa-solid fa-pen-to-square"></i></button>
                   <button class="action-btn action-btn--delete" data-action="delete-item" data-id="${item.id}" type="button"><i class="fa-solid fa-trash"></i></button>
                 </div>

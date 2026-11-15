@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ====== Cache local ====== */
   let allClasses         = [];
   let allStudents        = [];
+  let allTeachers        = [];
   let currentId          = null;
   let pendingDeleteId    = null;
   let selectedStudentIds = [];
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ====== Helpers de busca no cache ====== */
   function findClass(id)   { return allClasses.find(c => c.id === id) || null; }
   function findStudent(id) { return allStudents.find(s => s.id === id) || null; }
+  function teacherName(id) { return allTeachers.find(t => t.id === id)?.name || 'Sem professor'; }
 
   /* ====== Referências DOM ====== */
   const grid        = document.getElementById('classesGrid');
@@ -25,9 +27,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* ====== Carregar ====== */
   async function load() {
-    [allClasses, allStudents] = await Promise.all([
+    [allClasses, allStudents, allTeachers] = await Promise.all([
       storage.getClasses(),
       storage.getStudents(),
+      storage.getTeachers(),
     ]);
     render();
   }
@@ -88,6 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="class-card-schedule">
             <i class="fa-regular fa-calendar"></i>${schedText}
           </div>
+          <div class="class-card-schedule">
+            <i class="fa-solid fa-chalkboard-user"></i>${teacherName(cls.teacherId)}
+          </div>
           <div class="class-card-students">
             <div class="student-avatars">${avatars}${extra}</div>
             <span class="student-count-text">${students.length} aluno${students.length !== 1 ? 's' : ''}</span>
@@ -109,6 +115,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('classId').value = cls?.id || '';
     document.getElementById('classModalTitle').textContent = cls ? 'Editar Turma' : 'Nova Turma';
+
+    const teacherSel = document.getElementById('classTeacher');
+    if (teacherSel) {
+      teacherSel.innerHTML = '<option value="">Sem professor (só o admin)</option>'
+        + allTeachers.map(t => `<option value="${t.id}"${t.id === cls?.teacherId ? ' selected' : ''}>${t.name}</option>`).join('');
+    }
 
     if (cls) {
       utils.setInputValue('className',  cls.name);
@@ -254,6 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         id:         id || undefined,
         name,
         level:      utils.getInputValue('classLevel'),
+        teacherId:  utils.getInputValue('classTeacher') || null,
         schedules,
         studentIds: selectedStudentIds,
         notes:      utils.getInputValue('classNotes'),
@@ -279,7 +292,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentId = id;
 
     document.getElementById('detailClassName').textContent  = cls.name;
-    document.getElementById('detailClassLevel').textContent = utils.formatLevel(cls.level);
+    document.getElementById('detailClassLevel').textContent =
+      `${utils.formatLevel(cls.level)} · ${teacherName(cls.teacherId)}`;
 
     // Horários
     const chipContainer = document.getElementById('classScheduleDetail');

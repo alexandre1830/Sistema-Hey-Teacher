@@ -62,7 +62,7 @@
             <span class="nav-label">Alunos</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" data-admin-only>
           <a href="../turmas/" class="nav-link">
             <i class="fa-solid fa-users nav-icon"></i>
             <span class="nav-label">Turmas</span>
@@ -80,10 +80,16 @@
             <span class="nav-label">Progresso</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" data-admin-only>
           <a href="../financas/" class="nav-link">
             <i class="fa-solid fa-dollar-sign nav-icon"></i>
             <span class="nav-label">Finanças</span>
+          </a>
+        </li>
+        <li class="nav-item" data-admin-only>
+          <a href="../professores/" class="nav-link">
+            <i class="fa-solid fa-chalkboard-user nav-icon"></i>
+            <span class="nav-label">Professores</span>
           </a>
         </li>
       </ul>
@@ -141,7 +147,7 @@
             <i class="fa-solid fa-arrow-right stat-card-arrow"></i>
           </a>
 
-          <a href="../turmas/" class="stat-card stat-card--secondary">
+          <a href="../turmas/" class="stat-card stat-card--secondary" data-admin-only>
             <i class="fa-solid fa-users stat-card-icon"></i>
             <div class="stat-body">
               <span class="stat-label">Turmas</span>
@@ -159,7 +165,7 @@
             <i class="fa-solid fa-arrow-right stat-card-arrow"></i>
           </a>
 
-          <a href="../financas/" class="stat-card stat-card--finance">
+          <a href="../financas/" class="stat-card stat-card--finance" data-admin-only>
             <i class="fa-solid fa-circle-dollar-to-slot stat-card-icon"></i>
             <div class="stat-body">
               <span class="stat-label">Receita do Mês</span>

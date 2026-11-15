@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../css/desktop.css" />
   <link rel="stylesheet" href="../css/mobile.css" />
 </head>
-<body class="app-page">
+<body class="app-page" data-admin-page>
 
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
@@ -57,7 +57,7 @@
             <span class="nav-label">Alunos</span>
           </a>
         </li>
-        <li class="nav-item nav-item--active">
+        <li class="nav-item nav-item--active" data-admin-only>
           <a href="../turmas/" class="nav-link">
             <i class="fa-solid fa-users nav-icon"></i>
             <span class="nav-label">Turmas</span>
@@ -75,10 +75,16 @@
             <span class="nav-label">Progresso</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" data-admin-only>
           <a href="../financas/" class="nav-link">
             <i class="fa-solid fa-dollar-sign nav-icon"></i>
             <span class="nav-label">Finanças</span>
+          </a>
+        </li>
+        <li class="nav-item" data-admin-only>
+          <a href="../professores/" class="nav-link">
+            <i class="fa-solid fa-chalkboard-user nav-icon"></i>
+            <span class="nav-label">Professores</span>
           </a>
         </li>
       </ul>
@@ -201,6 +207,15 @@
               <option value="proficient">Proficiente (C2)</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="classTeacher" class="form-label">Professor</label>
+          <select id="classTeacher" name="teacherId" class="form-select">
+            <option value="">Sem professor (só o admin)</option>
+            <!-- Populated by JS -->
+          </select>
+          <span class="form-hint">O professor vê os alunos desta turma e registra a frequência deles.</span>
         </div>
 
         <fieldset class="form-fieldset">

@@ -9,12 +9,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ====== Cache local ====== */
   let allStudents     = [];
   let allClasses      = [];
+  let allTeachers     = [];
+  let isTeacher       = false;
   let currentId       = null;
   let pendingDeleteId = null;
 
   /* ====== Helpers de busca no cache ====== */
   function findStudent(id) { return allStudents.find(s => s.id === id) || null; }
   function findClass(id)   { return allClasses.find(c => c.id === id) || null; }
+
+  /* Professor responsável: o da turma, ou o do próprio aluno em aula individual */
+  function teacherName(s) {
+    const tid = s.classId ? findClass(s.classId)?.teacherId : s.teacherId;
+    return allTeachers.find(t => t.id === tid)?.name || 'Sem professor';
+  }
 
   /* ====== Referências DOM ====== */
   const grid        = document.getElementById('studentsGrid');
@@ -26,10 +34,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* ====== Carregar e Renderizar ====== */
   async function load() {
-    [allStudents, allClasses] = await Promise.all([
+    let ctx;
+    [allStudents, allClasses, allTeachers, ctx] = await Promise.all([
       storage.getStudents(),
       storage.getClasses(),
+      storage.getTeachers(),
+      storage.getContext(),
     ]);
+    isTeacher = ctx.role === 'teacher';
     populateClassFilter();
     render();
   }
@@ -59,12 +71,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const cards = list.map(s => buildCard(s)).join('');
+    const emptyDesc = allStudents.length ? 'Tente ajustar os filtros'
+      : isTeacher ? 'Ainda não há alunos atribuídos a você. Fale com o administrador.'
+      : 'Clique em "Novo Aluno" para começar';
     const empty = `
       <div class="empty-state" id="emptyStudents">
         <i class="fa-solid fa-user-plus empty-state-icon"></i>
         <p class="empty-state-title">Nenhum aluno encontrado</p>
-        <p class="empty-state-desc">${allStudents.length ? 'Tente ajustar os filtros' : 'Clique em "Novo Aluno" para começar'}</p>
-        ${!allStudents.length ? '<button class="btn btn--primary" id="addFirstStudentBtn"><i class="fa-solid fa-plus"></i> Cadastrar Aluno</button>' : ''}
+        <p class="empty-state-desc">${emptyDesc}</p>
+        ${!allStudents.length && !isTeacher ? '<button class="btn btn--primary" id="addFirstStudentBtn"><i class="fa-solid fa-plus"></i> Cadastrar Aluno</button>' : ''}
       </div>`;
 
     if (grid) grid.innerHTML = list.length ? cards : empty;
@@ -228,12 +243,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       utils.setInputValue('studentContractEnd',   student.contractEnd);
       utils.setInputValue('studentStatus',         student.status || 'active');
       populateClassSelect(student.classId);
+      populateTeacherSelect(student.teacherId);
       initStudentSchedules(getStudentSchedules(student));
     } else {
       utils.setInputValue('studentStatus', 'active');
       populateClassSelect(null);
+      populateTeacherSelect(null);
       initStudentSchedules([]);
     }
+    syncTeacherField();
 
     modals.open('studentModalOverlay');
   }
@@ -244,6 +262,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     sel.innerHTML = '<option value="">Aula individual</option>'
       + allClasses.map(c => `<option value="${c.id}"${c.id===selectedId?' selected':''}>${c.name}</option>`).join('');
   }
+
+  function populateTeacherSelect(selectedId) {
+    const sel = document.getElementById('studentTeacher');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Sem professor (só o admin)</option>'
+      + allTeachers.map(t => `<option value="${t.id}"${t.id===selectedId?' selected':''}>${t.name}</option>`).join('');
+  }
+
+  /* Em turma, o professor vem da turma: o campo fica travado mostrando quem é */
+  function syncTeacherField() {
+    const sel   = document.getElementById('studentTeacher');
+    const hint  = document.getElementById('studentTeacherHint');
+    const clsId = utils.getInputValue('studentClass');
+    if (!sel) return;
+    sel.disabled = !!clsId;
+    if (hint) hint.textContent = clsId
+      ? `Definido pela turma: ${allTeachers.find(t => t.id === findClass(clsId)?.teacherId)?.name || 'sem professor'}.`
+      : 'Professor responsável pela aula individual.';
+  }
+
+  document.getElementById('studentClass')?.addEventListener('change', syncTeacherField);
 
   document.getElementById('addStudentBtn')?.addEventListener('click', () => openForm());
   document.getElementById('studentModalCancel')?.addEventListener('click', () => modals.close('studentModalOverlay'));
@@ -281,6 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         occupation:    utils.getInputValue('studentOccupation')    || '',
         status:        utils.getInputValue('studentStatus')        || 'active',
         classId:       utils.getInputValue('studentClass')         || null,
+        teacherId:     utils.getInputValue('studentTeacher')       || null,
         level,
         schedules,
         notes:         utils.getInputValue('studentNotes')         || '',
@@ -324,6 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     utils.setTextContent('detailPhone',         utils.formatPhone(s.phone));
     utils.setTextContent('detailAge',           s.age    ? `${s.age} anos` : '—');
     utils.setTextContent('detailClass',         cls?.name || 'Individual');
+    utils.setTextContent('detailTeacher',       teacherName(s));
     utils.setTextContent('detailOrigin',        s.origin || '—');
     utils.setTextContent('detailOccupation',    s.occupation || '—');
     utils.setTextContent('detailLevel',         utils.formatLevel(s.level));
@@ -344,7 +385,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     loadAttendanceTab(id);
-    loadFinanceTab(id);
+    if (!isTeacher) loadFinanceTab(id);
     activateTab('btnTabProfile', 'tabProfile');
     modals.open('studentDetailOverlay');
   }

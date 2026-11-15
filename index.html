@@ -13,6 +13,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="images/favicon-180.png" />
   <title>Hey, Teacher! — Login</title>
   <script>try{var _t=localStorage.getItem('ht_theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
+  <!-- Lê o tipo de link de e-mail (convite/recuperação) antes que o Supabase limpe o endereço -->
+  <script>try{var _h=new URLSearchParams(location.hash.slice(1));window.__authLink={type:_h.get('type'),error:_h.get('error_code')||_h.get('error')};}catch(e){window.__authLink={};}</script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -107,6 +109,37 @@
 
         <div class="login-alert" id="loginAlert" role="alert" aria-live="polite"></div>
 
+      </form>
+
+      <!-- Definir senha: aberto pelo link do convite ou de "Esqueci a senha" -->
+      <form class="login-form" id="setPasswordForm" novalidate hidden>
+        <p class="login-form-title" id="setPasswordTitle">Defina sua senha</p>
+
+        <div class="form-group">
+          <label for="newPassword" class="form-label">Nova senha</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-key input-icon"></i>
+            <input type="password" id="newPassword" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required />
+          </div>
+          <span class="form-error" id="newPasswordError" role="alert"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Confirmar senha</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-key input-icon"></i>
+            <input type="password" id="confirmPassword" class="form-input" placeholder="Repita a senha" autocomplete="new-password" required />
+          </div>
+          <span class="form-error" id="confirmPasswordError" role="alert"></span>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full" id="setPasswordBtn">
+          <span class="btn-text">Salvar senha e entrar</span>
+          <i class="fa-solid fa-arrow-right-to-bracket btn-icon"></i>
+          <span class="btn-loader" aria-hidden="true"></span>
+        </button>
+
+        <div class="login-alert" id="setPasswordAlert" role="alert" aria-live="polite"></div>
       </form>
     </section>
 

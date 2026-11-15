@@ -9,11 +9,32 @@ HT.storage = (() => {
 
   const db = HT.supabase;
 
-  /* ====== Utilitário: ID do usuário autenticado ====== */
-  async function _uid() {
-    const { data: { user } } = await db.auth.getUser();
-    if (!user) throw new Error('Usuário não autenticado.');
-    return user.id;
+  /* ====== Contexto do usuário: papel (admin/teacher) e escola dona dos dados ======
+     Todos os registros pertencem à escola (user_id = ID do admin). Para o admin,
+     escola = ele mesmo; para o professor, a escola que o convidou. Cacheado por página. */
+  let _ctxPromise = null;
+
+  function getContext() {
+    if (!_ctxPromise) {
+      _ctxPromise = (async () => {
+        const { data: { user } } = await db.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado.');
+        const { data } = await db.from('profiles')
+          .select('role, school_id').eq('id', user.id).single();
+        return { uid: user.id, role: data?.role || null, schoolId: data?.school_id || null };
+      })().catch(err => { _ctxPromise = null; throw err; });
+    }
+    return _ctxPromise;
+  }
+
+  async function _schoolId() {
+    const { schoolId } = await getContext();
+    if (!schoolId) throw new Error('Conta sem acesso a uma escola.');
+    return schoolId;
+  }
+
+  async function _isTeacher() {
+    return (await getContext()).role === 'teacher';
   }
 
   /* ====================================================================
@@ -32,6 +53,7 @@ HT.storage = (() => {
       occupation: r.occupation  || '',
       status:     r.status      || 'active',
       classId:    r.class_id    || null,
+      teacherId:  r.teacher_id  || null,
       level:      r.level       || '',
       schedules:  r.schedules   || [],
       monthlyFee:    r.monthly_fee,
@@ -52,6 +74,8 @@ HT.storage = (() => {
       occupation:     d.occupation    || null,
       status:         d.status        || 'active',
       class_id:       d.classId       || null,
+      /* Aluno de turma segue o professor da turma; o campo só vale para aula individual */
+      teacher_id:     d.classId ? null : (d.teacherId || null),
       level:          d.level         || null,
       schedules:      d.schedules     || [],
       monthly_fee:    d.monthlyFee    ? +d.monthlyFee : null,
@@ -70,16 +94,18 @@ HT.storage = (() => {
       level:      r.level     || '',
       schedules:  r.schedules || [],
       studentIds: (r.students || []).map(s => s.id),
+      teacherId:  r.teacher_id || null,
       notes:      r.notes     || '',
       createdAt:  r.created_at,
     };
   }
   function _fromClass(d) {
     return {
-      name:      d.name,
-      level:     d.level     || null,
-      schedules: d.schedules || [],
-      notes:     d.notes     || '',
+      name:       d.name,
+      level:      d.level     || null,
+      schedules:  d.schedules || [],
+      teacher_id: d.teacherId || null,
+      notes:      d.notes     || '',
     };
   }
 
@@ -93,6 +119,7 @@ HT.storage = (() => {
       status:        r.status,
       lessonContent: r.lesson_content || '',
       notes:         r.notes          || '',
+      createdBy:     r.created_by     || null,
       createdAt:     r.created_at,
     };
   }
@@ -140,42 +167,49 @@ HT.storage = (() => {
      ==================================================================== */
 
   async function getStudents() {
-    const uid = await _uid();
+    /* Professor não lê a tabela direto: a função devolve só os alunos dele, sem dados financeiros */
+    if (await _isTeacher()) {
+      const { data, error } = await db.rpc('teacher_students');
+      if (error) throw error;
+      return data.map(_toStudent);
+    }
+    const sid = await _schoolId();
     const { data, error } = await db.from('students')
       .select('*')
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .order('name');
     if (error) throw error;
     return data.map(_toStudent);
   }
 
   async function getStudent(id) {
-    const uid = await _uid();
+    if (await _isTeacher()) return (await getStudents()).find(s => s.id === id) || null;
+    const sid = await _schoolId();
     const { data, error } = await db.from('students')
       .select('*')
       .eq('id', id)
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .single();
     if (error) return null;
     return _toStudent(data);
   }
 
   async function saveStudent(data) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = _fromStudent(data);
 
     if (data.id) {
       const { data: updated, error } = await db.from('students')
         .update(row)
         .eq('id', data.id)
-        .eq('user_id', uid)
+        .eq('user_id', sid)
         .select()
         .single();
       if (error) throw error;
       return _toStudent(updated);
     } else {
       const { data: inserted, error } = await db.from('students')
-        .insert({ ...row, user_id: uid })
+        .insert({ ...row, user_id: sid })
         .select()
         .single();
       if (error) throw error;
@@ -184,12 +218,12 @@ HT.storage = (() => {
   }
 
   async function deleteStudent(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     /* ON DELETE CASCADE no banco remove frequências e pagamentos vinculados */
     const { error } = await db.from('students')
       .delete()
       .eq('id', id)
-      .eq('user_id', uid);
+      .eq('user_id', sid);
     if (error) throw error;
   }
 
@@ -198,29 +232,44 @@ HT.storage = (() => {
      ==================================================================== */
 
   async function getClasses() {
-    const uid = await _uid();
+    const sid = await _schoolId();
+
+    /* Professor: só as turmas dele; os alunos de cada turma vêm da lista dele
+       (o JOIN com students voltaria vazio, pois ele não lê a tabela direto) */
+    if (await _isTeacher()) {
+      const [{ data, error }, students] = await Promise.all([
+        db.from('classes').select('*').eq('user_id', sid).order('name'),
+        getStudents(),
+      ]);
+      if (error) throw error;
+      return data.map(r => ({
+        ..._toClass(r),
+        studentIds: students.filter(s => s.classId === r.id).map(s => s.id),
+      }));
+    }
+
     /* JOIN: inclui IDs dos alunos de cada turma via students.class_id */
     const { data, error } = await db.from('classes')
       .select('*, students(id)')
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .order('name');
     if (error) throw error;
     return data.map(_toClass);
   }
 
   async function getClass(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('classes')
       .select('*, students(id)')
       .eq('id', id)
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .single();
     if (error) return null;
     return _toClass(data);
   }
 
   async function saveClass(data) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = _fromClass(data);
 
     let classId = data.id;
@@ -229,11 +278,11 @@ HT.storage = (() => {
       const { error } = await db.from('classes')
         .update(row)
         .eq('id', data.id)
-        .eq('user_id', uid);
+        .eq('user_id', sid);
       if (error) throw error;
     } else {
       const { data: inserted, error } = await db.from('classes')
-        .insert({ ...row, user_id: uid })
+        .insert({ ...row, user_id: sid })
         .select()
         .single();
       if (error) throw error;
@@ -248,7 +297,7 @@ HT.storage = (() => {
       const { data: current } = await db.from('students')
         .select('id')
         .eq('class_id', classId)
-        .eq('user_id', uid);
+        .eq('user_id', sid);
       const currentIds = (current || []).map(s => s.id);
 
       const toRemove = currentIds.filter(i => !newIds.includes(i));
@@ -256,11 +305,11 @@ HT.storage = (() => {
 
       if (toRemove.length > 0) {
         await db.from('students').update({ class_id: null })
-          .in('id', toRemove).eq('user_id', uid);
+          .in('id', toRemove).eq('user_id', sid);
       }
       if (toAdd.length > 0) {
         await db.from('students').update({ class_id: classId })
-          .in('id', toAdd).eq('user_id', uid);
+          .in('id', toAdd).eq('user_id', sid);
       }
     }
 
@@ -268,12 +317,12 @@ HT.storage = (() => {
   }
 
   async function deleteClass(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     /* Desvincula alunos antes de deletar */
     await db.from('students').update({ class_id: null })
-      .eq('class_id', id).eq('user_id', uid);
+      .eq('class_id', id).eq('user_id', sid);
     const { error } = await db.from('classes')
-      .delete().eq('id', id).eq('user_id', uid);
+      .delete().eq('id', id).eq('user_id', sid);
     if (error) throw error;
   }
 
@@ -282,42 +331,42 @@ HT.storage = (() => {
      ==================================================================== */
 
   async function getAttendance() {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('attendance')
       .select('*')
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .order('date', { ascending: false });
     if (error) throw error;
     return data.map(_toAttendance);
   }
 
   async function getStudentAttendance(studentId) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('attendance')
       .select('*')
       .eq('student_id', studentId)
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .order('date', { ascending: false });
     if (error) throw error;
     return data.map(_toAttendance);
   }
 
   async function saveAttendance(data) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = _fromAttendance(data);
 
     if (data.id) {
       const { data: updated, error } = await db.from('attendance')
         .update(row)
         .eq('id', data.id)
-        .eq('user_id', uid)
+        .eq('user_id', sid)
         .select()
         .single();
       if (error) throw error;
       return _toAttendance(updated);
     } else {
       const { data: inserted, error } = await db.from('attendance')
-        .insert({ ...row, user_id: uid })
+        .insert({ ...row, user_id: sid })
         .select()
         .single();
       if (error) throw error;
@@ -326,9 +375,9 @@ HT.storage = (() => {
   }
 
   async function deleteAttendance(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { error } = await db.from('attendance')
-      .delete().eq('id', id).eq('user_id', uid);
+      .delete().eq('id', id).eq('user_id', sid);
     if (error) throw error;
   }
 
@@ -337,42 +386,42 @@ HT.storage = (() => {
      ==================================================================== */
 
   async function getPayments() {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('payments')
       .select('*')
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .order('reference', { ascending: false });
     if (error) throw error;
     return data.map(_toPayment);
   }
 
   async function getStudentPayments(studentId) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('payments')
       .select('*')
       .eq('student_id', studentId)
-      .eq('user_id', uid)
+      .eq('user_id', sid)
       .order('reference', { ascending: false });
     if (error) throw error;
     return data.map(_toPayment);
   }
 
   async function savePayment(data) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = _fromPayment(data);
 
     if (data.id) {
       const { data: updated, error } = await db.from('payments')
         .update(row)
         .eq('id', data.id)
-        .eq('user_id', uid)
+        .eq('user_id', sid)
         .select()
         .single();
       if (error) throw error;
       return _toPayment(updated);
     } else {
       const { data: inserted, error } = await db.from('payments')
-        .insert({ ...row, user_id: uid })
+        .insert({ ...row, user_id: sid })
         .select()
         .single();
       if (error) throw error;
@@ -381,15 +430,41 @@ HT.storage = (() => {
   }
 
   async function deletePayment(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { error } = await db.from('payments')
-      .delete().eq('id', id).eq('user_id', uid);
+      .delete().eq('id', id).eq('user_id', sid);
     if (error) throw error;
   }
 
   /* ====================================================================
      PERFIL
      ==================================================================== */
+
+  /* ====================================================================
+     PROFESSORES (admin)
+     ==================================================================== */
+
+  /* Nomes dos professores da escola, para os seletores de turma/aluno */
+  async function getTeachers() {
+    if (await _isTeacher()) return [];
+    const { data, error } = await db.from('profiles')
+      .select('id, name, email').eq('role', 'teacher').order('name');
+    if (error) throw error;
+    return data.map(t => ({ id: t.id, name: t.name || t.email || 'Professor', email: t.email || '' }));
+  }
+
+  /* Convite, listagem com status e remoção rodam no servidor (Edge Function),
+     pois exigem a chave de serviço do Supabase */
+  async function manageTeachers(action, payload = {}) {
+    const { data, error } = await db.functions.invoke('manage-teachers', { body: { action, ...payload } });
+    if (error) {
+      /* A função devolve { error } com a mensagem amigável; o SDK embrulha em FunctionsHttpError */
+      let msg = error.message;
+      try { msg = (await error.context.json()).error || msg; } catch { /* corpo não-JSON */ }
+      throw new Error(msg);
+    }
+    return data;
+  }
 
   async function getProfile() {
     const { data: { user } } = await db.auth.getUser();
@@ -437,32 +512,32 @@ HT.storage = (() => {
   }
 
   async function getProgressCategories() {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('progress_categories')
-      .select('*').eq('user_id', uid).order('position');
+      .select('*').eq('user_id', sid).order('position');
     if (error) throw error;
     return data.map(_toProgressCategory);
   }
 
   async function saveProgressCategory(d) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = { name: d.name, position: d.position ?? 0 };
     if (d.id) {
       const { data: u, error } = await db.from('progress_categories')
-        .update(row).eq('id', d.id).eq('user_id', uid).select().single();
+        .update(row).eq('id', d.id).eq('user_id', sid).select().single();
       if (error) throw error;
       return _toProgressCategory(u);
     }
     const { data: ins, error } = await db.from('progress_categories')
-      .insert({ ...row, user_id: uid }).select().single();
+      .insert({ ...row, user_id: sid }).select().single();
     if (error) throw error;
     return _toProgressCategory(ins);
   }
 
   async function deleteProgressCategory(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { error } = await db.from('progress_categories')
-      .delete().eq('id', id).eq('user_id', uid);
+      .delete().eq('id', id).eq('user_id', sid);
     if (error) throw error;
   }
 
@@ -479,35 +554,35 @@ HT.storage = (() => {
   }
 
   async function getProgressContents() {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('progress_contents')
-      .select('*').eq('user_id', uid).order('position');
+      .select('*').eq('user_id', sid).order('position');
     if (error) throw error;
     return data.map(_toProgressContent);
   }
 
   async function saveProgressContent(d) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = {
       category_id: d.categoryId, title: d.title,
       description: d.description || null, position: d.position ?? 0,
     };
     if (d.id) {
       const { data: u, error } = await db.from('progress_contents')
-        .update(row).eq('id', d.id).eq('user_id', uid).select().single();
+        .update(row).eq('id', d.id).eq('user_id', sid).select().single();
       if (error) throw error;
       return _toProgressContent(u);
     }
     const { data: ins, error } = await db.from('progress_contents')
-      .insert({ ...row, user_id: uid }).select().single();
+      .insert({ ...row, user_id: sid }).select().single();
     if (error) throw error;
     return _toProgressContent(ins);
   }
 
   async function deleteProgressContent(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { error } = await db.from('progress_contents')
-      .delete().eq('id', id).eq('user_id', uid);
+      .delete().eq('id', id).eq('user_id', sid);
     if (error) throw error;
   }
 
@@ -523,45 +598,45 @@ HT.storage = (() => {
   }
 
   async function getStudentProgressRecords(studentId) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('student_progress')
-      .select('*').eq('student_id', studentId).eq('user_id', uid)
+      .select('*').eq('student_id', studentId).eq('user_id', sid)
       .order('date', { ascending: false });
     if (error) throw error;
     return data.map(_toStudentProgress);
   }
 
   async function getAllStudentProgress() {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { data, error } = await db.from('student_progress')
-      .select('*').eq('user_id', uid).order('date', { ascending: false });
+      .select('*').eq('user_id', sid).order('date', { ascending: false });
     if (error) throw error;
     return data.map(_toStudentProgress);
   }
 
   async function saveStudentProgress(d) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const row = {
       student_id: d.studentId, content_id: d.contentId,
       status: d.status, date: d.date, notes: d.notes || null,
     };
     if (d.id) {
       const { data: u, error } = await db.from('student_progress')
-        .update(row).eq('id', d.id).eq('user_id', uid).select().single();
+        .update(row).eq('id', d.id).eq('user_id', sid).select().single();
       if (error) throw error;
       return _toStudentProgress(u);
     }
     const { data: ins, error } = await db.from('student_progress')
-      .insert({ ...row, user_id: uid }).select().single();
+      .insert({ ...row, user_id: sid }).select().single();
     if (error) throw error;
     return _toStudentProgress(ins);
   }
 
   async function bulkSaveStudentProgress(records) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     if (!records.length) return;
     const rows = records.map(d => ({
-      user_id: uid, student_id: d.studentId, content_id: d.contentId,
+      user_id: sid, student_id: d.studentId, content_id: d.contentId,
       status: d.status, date: d.date, notes: d.notes || null,
     }));
     const { error } = await db.from('student_progress').insert(rows);
@@ -569,9 +644,9 @@ HT.storage = (() => {
   }
 
   async function deleteStudentProgress(id) {
-    const uid = await _uid();
+    const sid = await _schoolId();
     const { error } = await db.from('student_progress')
-      .delete().eq('id', id).eq('user_id', uid);
+      .delete().eq('id', id).eq('user_id', sid);
     if (error) throw error;
   }
 
@@ -587,6 +662,7 @@ HT.storage = (() => {
     getAttendance, getStudentAttendance, saveAttendance, deleteAttendance,
     getPayments,   getStudentPayments,   savePayment,   deletePayment,
     getProfile, saveProfile,
+    getContext, getTeachers, manageTeachers,
     getProgressCategories, saveProgressCategory, deleteProgressCategory,
     getProgressContents,   saveProgressContent,  deleteProgressContent,
     getStudentProgressRecords, getAllStudentProgress,

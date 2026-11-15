@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gerenciamento dos professores da escola: convites de acesso e remoção." />
+  <meta name="theme-color" content="#032d6f" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../images/favicon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon-180.png" />
+  <title>Hey, Teacher! — Professores</title>
+  <script>try{var _t=localStorage.getItem('ht_theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" /></noscript>
+
+  <!-- Icons -->
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /></noscript>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/dark.css" />
+  <link rel="stylesheet" href="../css/desktop.css" />
+  <link rel="stylesheet" href="../css/mobile.css" />
+</head>
+<body class="app-page" data-admin-page>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <img src="../images/logo-azul.png" alt="Hey, Teacher!" class="sidebar-logo-img" width="1272" height="871" />
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list" role="list">
+        <li class="nav-item">
+          <a href="../dashboard/" class="nav-link">
+            <i class="fa-solid fa-house nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="../alunos/" class="nav-link">
+            <i class="fa-solid fa-user-graduate nav-icon"></i>
+            <span class="nav-label">Alunos</span>
+          </a>
+        </li>
+        <li class="nav-item" data-admin-only>
+          <a href="../turmas/" class="nav-link">
+            <i class="fa-solid fa-users nav-icon"></i>
+            <span class="nav-label">Turmas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="../frequencia/" class="nav-link">
+            <i class="fa-solid fa-calendar-check nav-icon"></i>
+            <span class="nav-label">Frequência</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="../progresso/" class="nav-link">
+            <i class="fa-solid fa-chart-line nav-icon"></i>
+            <span class="nav-label">Progresso</span>
+          </a>
+        </li>
+        <li class="nav-item" data-admin-only>
+          <a href="../financas/" class="nav-link">
+            <i class="fa-solid fa-dollar-sign nav-icon"></i>
+            <span class="nav-label">Finanças</span>
+          </a>
+        </li>
+        <li class="nav-item nav-item--active" data-admin-only>
+          <a href="../professores/" class="nav-link">
+            <i class="fa-solid fa-chalkboard-user nav-icon"></i>
+            <span class="nav-label">Professores</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="user-info" id="openProfileBtn" aria-label="Editar perfil">
+        <div class="user-avatar" id="sidebarAvatar" aria-hidden="true">
+          <span class="user-avatar-initials">P</span>
+        </div>
+        <div class="user-details">
+          <span class="user-name" id="sidebarUserName">Professor</span>
+          <span class="user-role">Administrador</span>
+        </div>
+        <i class="fa-solid fa-pen-to-square user-edit-icon" aria-hidden="true"></i>
+      </button>
+      <button class="btn-icon-only" id="settingsBtn" aria-label="Configurações">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+
+    <!-- Top Header -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="topbar-title">
+        <h2>Professores</h2>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn--primary btn--sm" id="inviteTeacherBtn">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Convidar Professor</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content" id="mainContent">
+
+      <section class="toolbar" aria-label="Resumo">
+        <p class="text-muted text-small" style="margin:0">
+          Professores entram com e-mail e senha próprios. Eles veem apenas os alunos das turmas
+          e aulas individuais atribuídas a eles (sem dados financeiros) e registram frequência e progresso.
+        </p>
+        <div class="results-count" id="teachersCount" aria-live="polite"></div>
+      </section>
+
+      <section class="cards-grid" id="teachersGrid" aria-label="Lista de professores">
+        <div class="empty-state empty-state--sm">
+          <i class="fa-solid fa-rotate fa-spin"></i>
+          <p>Carregando...</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================== MODAL: Convidar Professor ===================== -->
+  <div class="modal-overlay" id="inviteModalOverlay" aria-hidden="true">
+    <div class="modal modal--confirm" id="inviteModal" role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle">
+      <div class="modal-header">
+        <h3 class="modal-title" id="inviteModalTitle">Convidar Professor</h3>
+        <button class="modal-close" id="inviteModalClose" aria-label="Fechar modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form class="modal-body" id="inviteForm" novalidate>
+        <div class="form-group">
+          <label for="teacherName" class="form-label">Nome <span class="required">*</span></label>
+          <input type="text" id="teacherName" class="form-input" placeholder="Nome do professor" autocomplete="off" />
+          <span class="form-error" id="teacherNameError"></span>
+        </div>
+        <div class="form-group">
+          <label for="teacherEmail" class="form-label">E-mail <span class="required">*</span></label>
+          <input type="email" id="teacherEmail" class="form-input" placeholder="professor@email.com" autocomplete="off" />
+          <span class="form-error" id="teacherEmailError"></span>
+          <span class="form-hint">O professor recebe um link por e-mail para criar a própria senha.</span>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--ghost" id="inviteCancel">Cancelar</button>
+        <button type="submit" form="inviteForm" class="btn btn--primary" id="inviteSend">
+          <i class="fa-solid fa-paper-plane"></i>
+          Enviar convite
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: Confirmar remoção ===================== -->
+  <div class="modal-overlay" id="removeConfirmOverlay" aria-hidden="true">
+    <div class="modal modal--confirm" role="alertdialog" aria-modal="true" aria-labelledby="removeConfirmTitle" aria-describedby="removeConfirmDesc">
+      <div class="modal-header">
+        <h3 class="modal-title modal-title--danger" id="removeConfirmTitle">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Remover acesso
+        </h3>
+      </div>
+      <div class="modal-body">
+        <p id="removeConfirmDesc"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn--ghost" id="removeCancel">Cancelar</button>
+        <button type="button" class="btn btn--danger" id="removeConfirm">
+          <i class="fa-solid fa-user-slash"></i>
+          Remover
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="../js/supabase.js" defer></script>
+  <script src="../js/theme.js" defer></script>
+  <script src="../js/utils.js" defer></script>
+  <script src="../js/auth.js" defer></script>
+  <script src="../js/storage.js" defer></script>
+  <script src="../js/sidebar.js" defer></script>
+  <script src="../js/modals.js" defer></script>
+  <script src="../js/profile.js" defer></script>
+  <script src="../js/professores.js" defer></script>
+</body>
+</html>

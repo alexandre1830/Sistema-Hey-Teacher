@@ -57,7 +57,7 @@
             <span class="nav-label">Alunos</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" data-admin-only>
           <a href="../turmas/" class="nav-link">
             <i class="fa-solid fa-users nav-icon"></i>
             <span class="nav-label">Turmas</span>
@@ -75,10 +75,16 @@
             <span class="nav-label">Progresso</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" data-admin-only>
           <a href="../financas/" class="nav-link">
             <i class="fa-solid fa-dollar-sign nav-icon"></i>
             <span class="nav-label">Finanças</span>
+          </a>
+        </li>
+        <li class="nav-item" data-admin-only>
+          <a href="../professores/" class="nav-link">
+            <i class="fa-solid fa-chalkboard-user nav-icon"></i>
+            <span class="nav-label">Professores</span>
           </a>
         </li>
       </ul>
@@ -116,7 +122,7 @@
         <h2>Alunos</h2>
       </div>
       <div class="topbar-actions">
-        <button class="btn btn--primary btn--sm" id="addStudentBtn">
+        <button class="btn btn--primary btn--sm" id="addStudentBtn" data-admin-only>
           <i class="fa-solid fa-plus"></i>
           <span>Novo Aluno</span>
         </button>
@@ -264,12 +270,22 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="studentStatus" class="form-label">Situação</label>
-            <select id="studentStatus" name="status" class="form-select">
-              <option value="active">Ativo</option>
-              <option value="inactive">Inativo</option>
-            </select>
+          <div class="form-row form-row--2">
+            <div class="form-group">
+              <label for="studentStatus" class="form-label">Situação</label>
+              <select id="studentStatus" name="status" class="form-select">
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="studentTeacher" class="form-label">Professor</label>
+              <select id="studentTeacher" name="teacherId" class="form-select">
+                <option value="">Sem professor (só o admin)</option>
+                <!-- Populated by JS -->
+              </select>
+              <span class="form-hint" id="studentTeacherHint">Para aula individual. Em turma, vale o professor da turma.</span>
+            </div>
           </div>
 
           <div id="studentSchedules">
@@ -347,11 +363,11 @@
           </div>
         </div>
         <div class="modal-header-actions">
-          <button class="btn btn--ghost btn--sm" id="editStudentBtn">
+          <button class="btn btn--ghost btn--sm" id="editStudentBtn" data-admin-only>
             <i class="fa-solid fa-pen-to-square"></i>
             Editar
           </button>
-          <button class="btn btn--danger btn--sm" id="deleteStudentBtn">
+          <button class="btn btn--danger btn--sm" id="deleteStudentBtn" data-admin-only>
             <i class="fa-solid fa-trash"></i>
             Excluir
           </button>
@@ -371,7 +387,7 @@
           <i class="fa-solid fa-calendar-check"></i>
           Frequência
         </button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="tabFinance" id="btnTabFinance">
+        <button class="tab" role="tab" aria-selected="false" aria-controls="tabFinance" id="btnTabFinance" data-admin-only>
           <i class="fa-solid fa-receipt"></i>
           Finanças
         </button>
@@ -410,6 +426,12 @@
               </span>
               <span class="info-value" id="detailClass">—</span>
             </div>
+            <div class="info-item" data-admin-only>
+              <span class="info-label">
+                <i class="fa-solid fa-chalkboard-user"></i> Professor
+              </span>
+              <span class="info-value" id="detailTeacher">—</span>
+            </div>
             <div class="info-item">
               <span class="info-label">
                 <i class="fa-solid fa-location-dot"></i> Localização
@@ -434,19 +456,19 @@
               </span>
               <span class="info-value" id="detailLevel">—</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" data-admin-only>
               <span class="info-label">
                 <i class="fa-solid fa-circle-dollar-to-slot"></i> Mensalidade
               </span>
               <span class="info-value" id="detailFee">—</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" data-admin-only>
               <span class="info-label">
                 <i class="fa-regular fa-calendar-plus"></i> Início do contrato
               </span>
               <span class="info-value" id="detailContractStart">—</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" data-admin-only>
               <span class="info-label">
                 <i class="fa-regular fa-calendar-minus"></i> Término do contrato
               </span>

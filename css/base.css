@@ -293,6 +293,20 @@ h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.3; }
 }
 
 .login-form { display: flex; flex-direction: column; gap: 20px; }
+.login-form[hidden] { display: none; }
+.login-form-title { font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+
+/* --------------------------------------------------------------------------
+   PAPÉIS — itens exclusivos do admin ficam ocultos até o papel ser confirmado
+   (auth.js define <html data-role>). Visual apenas: a segurança está no banco.
+   -------------------------------------------------------------------------- */
+html:not([data-role="admin"]) [data-admin-only] { display: none !important; }
+html:not([data-role="admin"]) body[data-admin-page] .main-wrapper { visibility: hidden; }
+
+/* Dashboard do professor: só 2 cards (Alunos e Frequência) — sem colunas vazias */
+@media (min-width: 640px) {
+  html[data-role="teacher"] .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
 
 .login-options {
   display: flex;

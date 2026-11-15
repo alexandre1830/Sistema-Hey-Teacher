@@ -40,10 +40,11 @@
       <ul class="nav-list" role="list">
         <li class="nav-item"><a href="../dashboard/" class="nav-link"><i class="fa-solid fa-house nav-icon"></i><span class="nav-label">Dashboard</span></a></li>
         <li class="nav-item"><a href="../alunos/" class="nav-link"><i class="fa-solid fa-user-graduate nav-icon"></i><span class="nav-label">Alunos</span></a></li>
-        <li class="nav-item"><a href="../turmas/" class="nav-link"><i class="fa-solid fa-users nav-icon"></i><span class="nav-label">Turmas</span></a></li>
+        <li class="nav-item" data-admin-only><a href="../turmas/" class="nav-link"><i class="fa-solid fa-users nav-icon"></i><span class="nav-label">Turmas</span></a></li>
         <li class="nav-item"><a href="../frequencia/" class="nav-link"><i class="fa-solid fa-calendar-check nav-icon"></i><span class="nav-label">Frequência</span></a></li>
         <li class="nav-item nav-item--active"><a href="../progresso/" class="nav-link"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-label">Progresso</span></a></li>
-        <li class="nav-item"><a href="../financas/" class="nav-link"><i class="fa-solid fa-dollar-sign nav-icon"></i><span class="nav-label">Finanças</span></a></li>
+        <li class="nav-item" data-admin-only><a href="../financas/" class="nav-link"><i class="fa-solid fa-dollar-sign nav-icon"></i><span class="nav-label">Finanças</span></a></li>
+        <li class="nav-item" data-admin-only><a href="../professores/" class="nav-link"><i class="fa-solid fa-chalkboard-user nav-icon"></i><span class="nav-label">Professores</span></a></li>
       </ul>
     </nav>
     <div class="sidebar-footer">
@@ -114,7 +115,7 @@
             Conteúdos do Programa
           </h3>
           <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn--primary btn--sm" id="addCategoryBtn">
+            <button class="btn btn--primary btn--sm" id="addCategoryBtn" data-admin-only>
               <i class="fa-solid fa-plus"></i>
               Nova Categoria
             </button>

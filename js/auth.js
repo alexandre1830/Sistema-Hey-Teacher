@@ -14,6 +14,21 @@ HT.auth = (() => {
   const LOGIN_URL     = ROOT;
   const DASHBOARD_URL = ROOT + 'dashboard/';
 
+  const ROLE_LABELS = { admin: 'Administrador', teacher: 'Professor(a)' };
+
+  /* Aplica o papel cedo (cache do último acesso) para evitar piscar itens de admin */
+  try {
+    const cached = localStorage.getItem('ht_role');
+    if (cached) document.documentElement.dataset.role = cached;
+  } catch { /* storage indisponível */ }
+
+  function applyRole(role) {
+    document.documentElement.dataset.role = role;
+    try { localStorage.setItem('ht_role', role); } catch { /* storage indisponível */ }
+    document.querySelectorAll('.user-role, .profile-header-role')
+      .forEach(el => { el.textContent = ROLE_LABELS[role] || ''; });
+  }
+
   /* ====== Sessão ====== */
   async function isAuthenticated() {
     const { data: { session } } = await db.auth.getSession();
@@ -35,13 +50,32 @@ HT.auth = (() => {
   /* ====== Logout ====== */
   async function logout() {
     await db.auth.signOut();
+    try { localStorage.removeItem('ht_role'); } catch { /* storage indisponível */ }
     window.location.href = LOGIN_URL;
   }
 
   /* ====== Proteção de rotas ====== */
   async function requireAuth() {
     const ok = await isAuthenticated();
-    if (!ok) window.location.replace(LOGIN_URL);
+    if (!ok) { window.location.replace(LOGIN_URL); return false; }
+
+    /* Conta sem papel (cadastro avulso ou acesso removido) não entra */
+    const { role, schoolId } = await HT.storage.getContext();
+    if (!role || !schoolId) {
+      await db.auth.signOut();
+      try { localStorage.removeItem('ht_role'); } catch { /* storage indisponível */ }
+      window.location.replace(LOGIN_URL + '?semacesso=1');
+      return false;
+    }
+
+    applyRole(role);
+
+    /* Páginas só do admin (Turmas, Finanças, Professores) */
+    if (role !== 'admin' && document.body.hasAttribute('data-admin-page')) {
+      window.location.replace(DASHBOARD_URL);
+      return false;
+    }
+    return true;
   }
 
   function _errorMsg(error) {
@@ -68,28 +102,91 @@ HT.auth = (() => {
     const path        = window.location.pathname;
     const isLoginPage = path === rootPath || path === rootPath + 'index.html';
 
+    /* Espera o DOMContentLoaded mesmo com readyState "interactive": scripts defer
+       rodam nessa fase, e o storage.js (carregado depois deste) ainda não existe */
     function onReady(fn) {
-      if (document.readyState === 'loading')
-        document.addEventListener('DOMContentLoaded', fn);
-      else fn();
+      if (document.readyState === 'complete') fn();
+      else document.addEventListener('DOMContentLoaded', fn);
     }
 
     if (!isLoginPage) {
       onReady(async () => {
-        await requireAuth();
-        await populateUserInfo();
+        if (await requireAuth()) await populateUserInfo();
       });
     } else {
       onReady(async () => {
+        const link = window.__authLink || {};
+
+        /* Link de convite/recuperação: o Supabase abre a sessão a partir do endereço */
+        if (link.error) {
+          initLoginForm();
+          showLoginAlert('Este link expirou ou já foi usado. Peça um novo convite ao administrador ou use "Esqueci a senha".', 'error');
+          return;
+        }
+        if (link.type === 'invite' || link.type === 'recovery') {
+          if (await isAuthenticated()) { initSetPasswordForm(link.type); return; }
+        }
+
         const authenticated = await isAuthenticated();
         if (authenticated) {
           window.location.replace(DASHBOARD_URL);
           return;
         }
         initLoginForm();
+        if (new URLSearchParams(location.search).has('semacesso')) {
+          showLoginAlert('Sua conta não tem acesso ao sistema. Fale com o administrador da escola.', 'error');
+        }
       });
     }
   })();
+
+  function showLoginAlert(msg, type) {
+    const alertBox = document.getElementById('loginAlert');
+    if (!alertBox) return;
+    alertBox.textContent = msg;
+    alertBox.className   = `login-alert ${type}`;
+  }
+
+  /* ====== Definir senha (convite / recuperação) ====== */
+  function initSetPasswordForm(type) {
+    const loginForm = document.getElementById('loginForm');
+    const form      = document.getElementById('setPasswordForm');
+    const passInp   = document.getElementById('newPassword');
+    const confInp   = document.getElementById('confirmPassword');
+    const passErr   = document.getElementById('newPasswordError');
+    const confErr   = document.getElementById('confirmPasswordError');
+    const btn       = document.getElementById('setPasswordBtn');
+    const alertBox  = document.getElementById('setPasswordAlert');
+    if (!form) return;
+
+    if (loginForm) loginForm.hidden = true;
+    form.hidden = false;
+    document.getElementById('setPasswordTitle').textContent =
+      type === 'invite' ? 'Bem-vindo(a)! Crie sua senha de acesso' : 'Defina uma nova senha';
+    passInp.focus();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      passErr.textContent = confErr.textContent = '';
+      alertBox.className  = 'login-alert';
+
+      if (passInp.value.length < 6)             { passErr.textContent = 'Mínimo 6 caracteres.'; return; }
+      if (passInp.value !== confInp.value)      { confErr.textContent = 'As senhas não coincidem.'; return; }
+
+      btn.classList.add('is-loading');
+      const { error } = await db.auth.updateUser({ password: passInp.value });
+      btn.classList.remove('is-loading');
+
+      if (error) {
+        alertBox.textContent = _errorMsg(error);
+        alertBox.className   = 'login-alert error';
+        return;
+      }
+      alertBox.textContent = 'Senha salva! Entrando...';
+      alertBox.className   = 'login-alert success';
+      setTimeout(() => window.location.replace(DASHBOARD_URL), 800);
+    });
+  }
 
   /* ====== Formulário de login ====== */
   function initLoginForm() {
@@ -175,6 +272,6 @@ HT.auth = (() => {
     });
   }
 
-  return { isAuthenticated, getUser, login, logout, requireAuth };
+  return { isAuthenticated, getUser, login, logout, requireAuth, ROOT };
 
 })();
