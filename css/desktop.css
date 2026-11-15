@@ -121,8 +121,6 @@
 
   .finance-summary-section .stat-card       { padding: 20px; gap: 12px; }
   .finance-summary-section .stat-icon       { width: 40px; height: 40px; font-size: 1.1rem; }
-  .finance-summary-section .stat-value      { font-size: 1.5rem; }
-  .finance-summary-section .stat-value--lg  { font-size: 1.75rem; }
 
 }
 
@@ -295,6 +293,16 @@
   .toolbar--cards-align .results-count {
     grid-column: 1 / -1;
     margin-left: auto;
+  }
+
+}
+
+/* 640–1023px: com 3 filtros (Alunos), metade da barra não comporta os selects —
+   a linha de filtros ocupa a largura toda, abaixo da busca */
+@media (min-width: 640px) and (max-width: 1023px) {
+
+  .toolbar--cards-align .filter-group {
+    grid-column: 1 / -1;
   }
 
 }
@@ -494,6 +502,26 @@
   .period-label {
     min-width: 140px;
   }
+
+}
+
+/* --------------------------------------------------------------------------
+   16b. TABLET (768–1023px) — o menu lateral fixo deixa ~490px de conteúdo
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) and (max-width: 1023px) {
+
+  /* Topbar com seletor de mês (Finanças): botão só com ícone, como no celular */
+  .topbar-actions:has(.period-selector) .btn span:not(.btn-loader) { display: none; }
+  .topbar-actions:has(.period-selector) .btn   { padding: 8px; aspect-ratio: 1; }
+  .topbar-actions:has(.period-selector) .btn i { margin: 0; }
+  .period-label { min-width: 110px; }
+
+  /* Cards de pagamento em uma coluna: em duas, mês, valor, status e ações não cabem */
+  .payment-cards-grid { grid-template-columns: 1fr; }
+
+  /* Resumo financeiro 2×2 mais compacto: sobra mais largura para o valor */
+  .finance-summary-section .stat-card { padding: 16px; gap: 12px; }
+  .finance-summary-section .stat-icon { width: 40px; height: 40px; font-size: 1.1rem; }
 
 }
 

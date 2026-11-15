@@ -1196,6 +1196,12 @@ html:not([data-role="admin"]) body[data-admin-page] .main-wrapper { visibility: 
 .stat-label { display: block; font-size: .8125rem; color: var(--text-secondary); font-weight: 500; }
 .stat-value { display: block; font-size: 1.5rem; font-weight: 800; color: var(--text-primary); letter-spacing: -.02em; line-height: 1.2; margin-top: 2px; }
 .stat-value--lg { font-size: 1.75rem; }
+/* Resumo financeiro: o valor nunca quebra em duas linhas e encolhe com a largura do card
+   (cqi = % da largura do .stat-body), com teto no tamanho normal. 14,5cqi comporta
+   "R$ 12.345,00"; o card principal comporta "R$ 123.456,00". */
+.finance-summary-section .stat-body      { container-type: inline-size; }
+.finance-summary-section .stat-value     { white-space: nowrap; font-size: min(1.5rem, 14.5cqi); }
+.finance-summary-section .stat-value--lg { font-size: min(1.75rem, 13.5cqi); }
 
 .stat-trend {
   display: flex;

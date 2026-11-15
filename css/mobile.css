@@ -526,6 +526,17 @@
     font-size: .8rem;
   }
 
+  /* Setas do seletor de mês compactas (eram 42px cada) para a barra caber no celular */
+  .topbar-actions .period-selector      { gap: 4px; padding: 3px 4px; }
+  .topbar-actions .period-selector .btn { width: 32px; height: 32px; padding: 0; }
+
+}
+
+/* Celular estreito: o seletor de mês e o menu já indicam a página — o título sai da barra */
+@media (max-width: 479px) {
+
+  .topbar:has(.period-selector) .topbar-title { display: none; }
+
 }
 
 /* --------------------------------------------------------------------------
